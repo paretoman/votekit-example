@@ -19,25 +19,51 @@
 </header>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <!DOCTYPE html>
-<html lang="en">
-    <head>
-        
-        <link href="./votekit/src/ui/sandbox.css" rel="stylesheet">
-        <link href="./votekit/src/menu/button.css" rel="stylesheet">
-        <script type="module" src="./votekit/dist/addSandboxes.js"></script>
-    </head>
-    <body>
-        
-<div class="sim-sandbox">
-    <div class="sim-container">
-        <div class="sandbox" data-initialstate="one">
-        </div>
-	</div>
-</div>
+        <article class="post">
 
-    </body>
-</html>
+  <header class="post-header">
+    <h1 class="post-title">Submodule Instructions</h1>
+  </header>
+
+  <div class="post-content">
+    <h1 id="submodule-for-publishing-parcel-build-on-github-pages">Submodule for Publishing Parcel Build on Github Pages</h1>
+
+<p>These are approximate instructions for how to (and how I almost did) set up a submodule in a repo and use it to be able to push changes to a github pages site.</p>
+
+<h2 id="start">Start</h2>
+<p>Blank folder called “_site”.
+New repo on github.</p>
+
+<h2 id="make-submodule">Make Submodule</h2>
+
+<p>Make the _site directory into a submodule.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git submodule add https://github.com/paretoman/votekit-example.git _site
+</code></pre></div></div>
+
+<h2 id="work-in-the-_site-directory">Work in the _site directory.</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd _site
+</code></pre></div></div>
+
+<h2 id="need-to-have-something-to-start-with">Need to have something to start with</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec jekyll build
+git add .
+git commit -m "First Attempt"
+</code></pre></div></div>
+
+<h2 id="change-name">Change name</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git branch -m master gh-pages
+</code></pre></div></div>
+
+<h2 id="push-to-github-pages">Push to github pages</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git remote add origin https://github.com/paretoman/votekit-example.git 
+git push -u origin gh-pages
+</code></pre></div></div>
+
+  </div>
+
+</article>
+
       </div>
     </main><footer class="site-footer h-card">
   <data class="u-url" href="/_site/"></data>
