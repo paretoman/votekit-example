@@ -48,34 +48,36 @@
 
 <p>These are approximate instructions for how to (and how I almost did) set up a submodule in a repo and use it to be able to push changes to a github pages site.</p>
 
-<h2 id="start">Start</h2>
-<p>Blank folder called “_site”.
-New repo on github.</p>
+<p><a href="https://stackoverflow.com/questions/14800669/git-create-repo-as-submodule">Similar instructions</a> on stackoverflow.</p>
+
+<h2 id="create-a-blank-github-repo">Create a blank github repo</h2>
+
+<p><a href="https://github.com/new">Create a new repo</a> on github. Only fill in a name and description. Skip the rest of the form.</p>
+
+<p>Follow the instructions listed after creating the repo.</p>
+
+<p>But first, there are some differences.</p>
+
+<p>In this case, I have a folder called <code class="language-plaintext highlighter-rouge">_site</code> that I want to be its own repository. It is already being ignored by git. It is listed in the .gitignore file. Delete the word <code class="language-plaintext highlighter-rouge">_site</code>from .gitignore. Then change directories to <code class="language-plaintext highlighter-rouge">_site</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd _site
+</code></pre></div></div>
+<p>Then follow the rest of the instructions that github gives you after creating a repo. These are listed under the heading “… or create a new repository on the command line.”</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo "# votekit-example" &gt;&gt; README.md
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/paretoman/votekit-example.git
+git push -u origin main
+</code></pre></div></div>
 
 <h2 id="make-submodule">Make Submodule</h2>
 
 <p>Make the _site directory into a submodule.</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git submodule add https://github.com/paretoman/votekit-example.git _site
-</code></pre></div></div>
-
-<h2 id="work-in-the-_site-directory">Work in the _site directory.</h2>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd _site
-</code></pre></div></div>
-
-<h2 id="need-to-have-something-to-start-with">Need to have something to start with</h2>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec jekyll build
-git add .
-git commit -m "First Attempt"
-</code></pre></div></div>
-
-<h2 id="change-name">Change name</h2>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git branch -m master gh-pages
-</code></pre></div></div>
-
-<h2 id="push-to-github-pages">Push to github pages</h2>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git remote add origin https://github.com/paretoman/votekit-example.git 
-git push -u origin gh-pages
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd ..
+git submodule add https://github.com/paretoman/votekit-example.git _site
 </code></pre></div></div>
 
   </div>
