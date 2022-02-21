@@ -2,6 +2,8 @@
 
 import VoterCircle from '../entities/VoterCircle.js'
 import Candidate from '../entities/Candidate.js'
+import Voters from '../../election/Voters.js'
+import Candidates from '../../election/Candidates.js'
 
 /**
  * Simulate one election with
@@ -13,29 +15,43 @@ import Candidate from '../entities/Candidate.js'
  * @param {Changes} changes
  * @param {Election} election
  */
-export default function SimOne(screen, dragm, menu, changes, election) {
+export default function SimOne(screen, dragm, menu, changes, oneElection) {
     const self = this
 
-    const sq = new Candidate(100, 200, 21, 21, '#e52', screen, dragm, election)
-    const sq2 = new Candidate(200, 100, 21, 21, '#5e2', screen, dragm, election)
-    const sq3 = new Candidate(600 - 200, 600 - 100, 21, 21, '#25e', screen, dragm, election)
-    const ci = new VoterCircle(100, 300, 200, screen, dragm, election)
-    const ci2 = new VoterCircle(500, 300, 200, screen, dragm, election)
+    const voters = new Voters()
+    const candidates = new Candidates()
+    const sq = new Candidate(50, 100, 21, 21, '#e52', screen, dragm, candidates)
+    const sq2 = new Candidate(100, 50, 21, 21, '#5e2', screen, dragm, candidates)
+    const sq3 = new Candidate(300 - 100, 300 - 50, 21, 21, '#25e', screen, dragm, candidates)
+    const ci = new VoterCircle(50, 150, 100, screen, dragm, voters)
+    const ci2 = new VoterCircle(250, 150, 100, screen, dragm, voters)
+
+    self.clear = () => {
+        candidates.clear()
+        voters.clear()
+    }
 
     self.update = () => {
         if (changes.checkNone()) return
         // clear changes, reset to []
         changes.clear()
-        election.updateTallies()
-        ci.update()
-        ci2.update()
+        oneElection.updateTallies(voters, candidates)
+        ci.update(candidates)
+        ci2.update(candidates)
+        screen.clear()
+        self.render()
     }
 
     self.render = () => {
         ci.render()
         ci2.render()
-        sq.render()
-        sq2.render()
-        sq3.render()
+    }
+    self.renderForeground = () => {
+        // sampleElections.renderForeground()
+        ci.renderForeground()
+        ci2.renderForeground()
+        sq.renderForeground()
+        sq2.renderForeground()
+        sq3.renderForeground()
     }
 }

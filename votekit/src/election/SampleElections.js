@@ -1,10 +1,7 @@
 /** @module */
 
-import CandidateDistributionSampler from './CandidateDistributionSampler.js'
-import simpleCandidate from './simpleCandidate.js'
-
 /**
- * Simulate winners from many elections.
+ * Simulate winners from many sampled elections.
  * Candidates are sampled from a distribution.
  * Winners are drawn as points.
  * The simulation is dynamic. More simulations are performed at each frame.
@@ -12,41 +9,28 @@ import simpleCandidate from './simpleCandidate.js'
  * @param {Menu} menu
  * @param {Election} election
  */
-export default function SimElections(screen, menu, election) {
+export default function SampleElections(screen, menu, election) {
     const self = this
 
     self.points = []
     self.newPoints = []
 
-    const candidateDistributions = []
-
-    self.newVoterGroup = function (voterGroup) {
-        election.newVoterGroup(voterGroup)
-    }
-
-    self.newCandidateDistribution = function (canDis) {
-        candidateDistributions.push(canDis)
-    }
-
     self.startSim = function () {
-        // All the election calculations happen here.
-
-        self.sampler = new CandidateDistributionSampler(candidateDistributions)
-
         self.points = []
-
         clearBuffer()
     }
 
-    self.addSim = function () {
+    self.addSim = function (voters, sampleCandidates) {
         // add more points
 
-        if (self.points.length > 5000) return
+        if (self.points.length > 5000) return 1
         // this limit right now is about graphics rendering.
         // todo: render to a buffer
 
         // number of sample elections
         const ns = 20
+
+        const voterGroups = voters.getVoterGroups()
 
         for (let i = 0; i < ns; i++) {
             // choose a number of candidates
@@ -56,16 +40,17 @@ export default function SimElections(screen, menu, election) {
             } else if (election.method.checkElectionType() === 'allocation') {
                 nk = 10
             }
+            const canList = []
             for (let k = 0; k < nk; k++) {
                 // sample a point from the distribution of candidates
-                const point = self.sampler.samplePoint()
+                const point = sampleCandidates.sampler.samplePoint()
 
-                // make a candidate... could make simpler
-                simpleCandidate(point.x, point.y, election)
+                // make a candidate
+                canList.push(point)
             }
 
             // find winner position
-            const results = election.runElection()
+            const results = election.runElection(voterGroups, canList)
 
             if (election.method.checkElectionType() === 'singleWinner') {
                 const { winner } = results
@@ -75,10 +60,10 @@ export default function SimElections(screen, menu, election) {
                 self.points.push(winPoint)
                 self.newPoints.push(winPoint)
             } else {
-                const { allocation, candidates } = results
+                const { allocation } = results
 
-                const jitterSize = 100
-                candidates.forEach(
+                const jitterSize = 10
+                canList.forEach(
                     (can, k) => {
                         const numPoints = allocation[k]
                         for (let m = 0; m < numPoints; m++) {
@@ -100,9 +85,9 @@ export default function SimElections(screen, menu, election) {
                     },
                 )
             }
-            election.clearCandidates()
         }
         renderToBuffer()
+        return 0
     }
 
     // buffer canvas

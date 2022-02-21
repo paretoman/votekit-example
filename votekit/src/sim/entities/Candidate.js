@@ -15,7 +15,7 @@ import { drawStrokedColor, textPercent } from './graphicsUtilities.js'
  * @param {DraggableManager} dragm
  * @param {Election} election
  */
-export default function Candidate(x, y, w, h, color, screen, dragm, election) {
+export default function Candidate(x, y, w, h, color, screen, dragm, candidates) {
     const self = this
 
     self.x = x
@@ -32,16 +32,16 @@ export default function Candidate(x, y, w, h, color, screen, dragm, election) {
 
     dragm.newSquareHandle(self, square)
 
-    election.newCandidate(self)
+    candidates.newCandidate(self)
 
     self.fraction = 0
     self.setFraction = function (fraction) {
         self.fraction = fraction
     }
 
-    self.render = function () {
+    self.renderForeground = function () {
         square.render()
 
-        drawStrokedColor(textPercent(self.fraction), self.x, self.y - square.h * 0.5 - 2, 20, 2, '#222', screen.ctx)
+        drawStrokedColor(textPercent(self.fraction), self.x, self.y - square.h * 0.5 - 2, 20, 2, '#222', screen.fctx)
     }
 }

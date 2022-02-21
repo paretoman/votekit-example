@@ -7,8 +7,10 @@ import addSVGOutput from './addSVGOutput.js'
 import Menu from '../menu/Menu.js'
 import Election from '../election/Election.js'
 import Sim from '../sim/Sim.js'
-import SimElections from '../election/SimElections.js'
-import divSandbox from './divSandbox.js'
+import SampleElections from '../election/SampleElections.js'
+import GeoElection from '../election/GeoElection.js'
+import Layout from './Layout.js'
+import OneElection from '../election/OneElection.js'
 
 /**
  * Set up a user interface to run a simulation.
@@ -23,21 +25,28 @@ export default function sandbox(config) {
     // manage dependent calculations because we only want to do calculations if we need to
     const changes = new Changes()
 
-    const menu = new Menu(changes)
+    const layout = new Layout(['menu', 'screen', 'foreground', 'geoMaps', 'svgUIDiv'])
 
-    const screen = new Screen(600, 600)
+    const menu = new Menu(changes, layout)
 
-    const svgUIDiv = addSVGOutput(screen, draw)
+    const screen = new Screen(300, 300, layout)
+
+    addSVGOutput(screen, draw, layout)
 
     const dragm = new DraggableManager(screen, changes)
 
     const election = new Election(menu)
 
-    const simElections = new SimElections(screen, menu, election)
+    const oneElection = new OneElection(screen, menu, election)
 
-    const sim = new Sim(screen, dragm, menu, changes, election, simElections, initialState)
+    const sampleElections = new SampleElections(screen, menu, election)
 
-    const div = divSandbox(menu, screen, svgUIDiv)
+    const geoElection = new GeoElection(screen, menu, election)
+
+    // eslint-disable-next-line max-len
+    const sim = new Sim(screen, dragm, menu, changes, election, oneElection, sampleElections, geoElection, initialState)
+
+    const div = layout.makeComponent()
 
     window.requestAnimationFrame(gameLoop)
 
@@ -45,7 +54,7 @@ export default function sandbox(config) {
 
     function gameLoop() {
         update()
-        draw()
+        drawForeground()
         window.requestAnimationFrame(gameLoop)
     }
 
@@ -53,8 +62,14 @@ export default function sandbox(config) {
         sim.update()
     }
 
+    function drawForeground() {
+        screen.clearForeground()
+        sim.renderForeground()
+    }
+
     function draw() {
         screen.clear()
         sim.render()
+        sim.renderForeground()
     }
 }

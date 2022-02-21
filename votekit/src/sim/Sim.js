@@ -1,7 +1,8 @@
 /** @module */
 
 import SimOne from './states/SimOne.js'
-import SimMany from './states/SimMany.js'
+import SimSample from './states/SimSample.js'
+import SimGeoOne from './states/SimGeoOne.js'
 
 /**
  * Simulation is the main task we're trying to accomplish in this program.
@@ -14,16 +15,25 @@ import SimMany from './states/SimMany.js'
  * @param {Menu} menu
  * @param {Changes} changes
  * @param {Election} election
- * @param {SimElections} simElections
+ * @param {SampleElections} sampleElections
+ * @param {GeoElection} geoElection
  * @param {String} initialState
  */
-export default function Sim(screen, dragm, menu, changes, election, simElections, initialState) {
+export default function Sim(
+    screen,
+    dragm,
+    menu,
+    changes,
+    election,
+    oneElection,
+    sampleElections,
+    geoElection,
+    initialState,
+) {
     const self = this
 
     changes.add(['simType'])
     const sims = {
-        one: {},
-        many: {},
     }
 
     self.state = initialState
@@ -33,19 +43,25 @@ export default function Sim(screen, dragm, menu, changes, election, simElections
         if (changes.check(['simType'])) {
             // exit state
             dragm.clear()
-            election.clear()
+            if (sims.one) sims.one.clear()
+            if (sims.sample) sims.sample.clear()
+            if (sims.geoOne) sims.geoOne.clear()
+            screen.hideGeoMaps()
 
             // enter state
             if (self.state === 'one') {
-                sims[self.state] = new SimOne(screen, dragm, menu, changes, election)
-            } else {
-                sims[self.state] = new SimMany(screen, dragm, menu, changes, simElections)
+                sims[self.state] = new SimOne(screen, dragm, menu, changes, oneElection)
+            } else if (self.state === 'sample') {
+                sims[self.state] = new SimSample(screen, dragm, menu, changes, sampleElections)
+            } else if (self.state === 'geoOne') {
+                sims[self.state] = new SimGeoOne(screen, dragm, menu, changes, geoElection)
             }
         }
 
         // state update
         sims[self.state].update()
     }
+    self.renderForeground = () => { sims[self.state].renderForeground() }
     self.render = () => { sims[self.state].render() }
 
     // -- Menu --
@@ -54,7 +70,8 @@ export default function Sim(screen, dragm, menu, changes, election, simElections
     // a list of simulation types
     self.typeList = [
         { name: 'One Election', value: 'one', state: '' },
-        { name: 'Many Elections', value: 'many', state: '' },
+        { name: 'Sample Elections', value: 'sample', state: '' },
+        { name: 'Geo Election', value: 'geoOne', state: '' },
     ]
     menu.addMenuItem(
         self,

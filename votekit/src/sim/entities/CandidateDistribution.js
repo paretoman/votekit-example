@@ -10,9 +10,9 @@ import SquareGraphic from './SquareGraphic.js'
  * @param {Number} r
  * @param {Screen} screen
  * @param {DraggableManager} dragm
- * @param {Election} election
+ * @param {Candidates} candidates
  */
-export default function CandidateDistribution(x, y, r, screen, dragm, election) {
+export default function CandidateDistribution(x, y, r, screen, dragm, candidates) {
     const self = this
 
     self.x = x
@@ -30,7 +30,7 @@ export default function CandidateDistribution(x, y, r, screen, dragm, election) 
 
     dragm.newSquareHandle(self, square)
 
-    election.newCandidateDistribution(self)
+    candidates.newCandidateDistribution(self)
 
     self.render = function () {
         const { ctx } = screen
@@ -40,7 +40,8 @@ export default function CandidateDistribution(x, y, r, screen, dragm, election) 
         ctx.arc(self.x, self.y, self.r, 0, 2 * Math.PI)
         // ctx.fill()
         ctx.stroke()
-
+    }
+    self.renderForeground = () => {
         square.render()
     }
 }
