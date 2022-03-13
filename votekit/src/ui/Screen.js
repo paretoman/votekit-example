@@ -1,5 +1,7 @@
 /** @module */
 
+import EventHandlers from './EventHandlers.js'
+
 /**
  * Set up a screen to view some objects.
  * A detail here is that we have browser pixels and device pixels.
@@ -8,6 +10,7 @@
  * @param {Number} w - width in browser pixels of the canvas.
  * @param {Number} h - height in browser pixels of the canvas.
  * @param {Layout} layout
+ * @constructor
  */
 export default function Screen(w, h, layout) {
     const self = this
@@ -30,9 +33,11 @@ export default function Screen(w, h, layout) {
     self.geoMaps.setAttribute('class', 'geoMaps')
     self.gctx = self.geoMaps.getContext('2d')
 
-    layout.newDiv('screen', self.canvas)
-    layout.newDiv('foreground', self.foreground)
-    layout.newDiv('geoMaps', self.geoMaps)
+    const clearDiv = document.createElement('div')
+    layout.newElement('clearDiv', clearDiv)
+    layout.newElement('screen', self.canvas)
+    layout.newElement('foreground', self.foreground)
+    layout.newElement('geoMaps', self.geoMaps)
 
     self.noBuffers = false
 
@@ -86,6 +91,23 @@ export default function Screen(w, h, layout) {
     }
     self.hideGeoMaps = () => {
         self.geoMaps.style.display = 'none'
+    }
+
+    self.eventHandlers = new EventHandlers()
+    const { handlers } = self.eventHandlers
+
+    self.foreground.onmousedown = (e) => handlers.start(e)
+    self.foreground.onmousemove = (e) => handlers.move(e)
+    self.foreground.onmouseup = (e) => handlers.end(e)
+    self.foreground.addEventListener('touchmove', (e) => handlers.touchmove(e))
+    self.foreground.addEventListener('touchstart', (e) => handlers.touchstart(e))
+    self.foreground.addEventListener('touchend', (e) => handlers.touchend(e))
+
+    // mouse up outside of canvas
+    const current = document.onmouseup
+    document.onmouseup = () => {
+        if (current) current()
+        self.foreground.onmouseup()
     }
 }
 

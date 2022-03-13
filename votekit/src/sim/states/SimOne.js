@@ -1,9 +1,10 @@
 /** @module */
 
-import VoterCircle from '../entities/VoterCircle.js'
-import Candidate from '../entities/Candidate.js'
-import Voters from '../../election/Voters.js'
-import Candidates from '../../election/Candidates.js'
+import OneVoterCircle from '../../voters/OneVoterCircle.js'
+import SimCandidate from '../../candidates/SimCandidate.js'
+import SimCandidateList from '../../candidates/SimCandidateList.js'
+import SimVoterList from '../../voters/SimVoterList.js'
+import SimBase from './SimBase.js'
 
 /**
  * Simulate one election with
@@ -14,44 +15,52 @@ import Candidates from '../../election/Candidates.js'
  * @param {Menu} menu
  * @param {Changes} changes
  * @param {Election} election
+ * @param {Object} canButton - a button that lets us add a candidate
+ * @constructor
  */
-export default function SimOne(screen, dragm, menu, changes, oneElection) {
+export default function SimOne(screen, dragm, menu, changes, oneElection, canButton) {
     const self = this
 
-    const voters = new Voters()
-    const candidates = new Candidates()
-    const sq = new Candidate(50, 100, 21, 21, '#e52', screen, dragm, candidates)
-    const sq2 = new Candidate(100, 50, 21, 21, '#5e2', screen, dragm, candidates)
-    const sq3 = new Candidate(300 - 100, 300 - 50, 21, 21, '#25e', screen, dragm, candidates)
-    const ci = new VoterCircle(50, 150, 100, screen, dragm, voters)
-    const ci2 = new VoterCircle(250, 150, 100, screen, dragm, voters)
+    SimBase.call(self, dragm, screen)
 
-    self.clear = () => {
-        candidates.clear()
-        voters.clear()
+    const oneVoters = new SimVoterList()
+
+    const simCandidateList = new SimCandidateList()
+
+    self.addSimCandidate = (candidate) => {
+        simCandidateList.newCandidate(new SimCandidate(candidate, dragm))
+    }
+
+    self.addSimVoterCircle = (voterCircle) => {
+        oneVoters.newVoterGroup(new OneVoterCircle(voterCircle, dragm, screen))
+    }
+
+    const superEnter = self.enter
+    self.enter = () => {
+        superEnter()
+        canButton.show()
+    }
+
+    self.exit = () => {
+        canButton.hide()
     }
 
     self.update = () => {
         if (changes.checkNone()) return
         // clear changes, reset to []
         changes.clear()
-        oneElection.updateTallies(voters, candidates)
-        ci.update(candidates)
-        ci2.update(candidates)
+        oneElection.updateTallies(oneVoters, simCandidateList)
+        oneVoters.update(simCandidateList)
         screen.clear()
         self.render()
     }
 
     self.render = () => {
-        ci.render()
-        ci2.render()
+        oneVoters.render()
     }
     self.renderForeground = () => {
         // sampleElections.renderForeground()
-        ci.renderForeground()
-        ci2.renderForeground()
-        sq.renderForeground()
-        sq2.renderForeground()
-        sq3.renderForeground()
+        oneVoters.renderForeground()
+        simCandidateList.renderForeground()
     }
 }

@@ -4,6 +4,7 @@
  * Class for a single button.
  * @param {*} buttonConfig
  * @param {*} onChoose
+ * @constructor
  */
 export default function Button(buttonConfig, onChoose) {
     const self = this
@@ -12,7 +13,7 @@ export default function Button(buttonConfig, onChoose) {
     self.name = buttonConfig.name
     self.nameIsHTML = buttonConfig.nameIsHTML || false
     self.dom = document.createElement('div')
-    self.dom.setAttribute('class', 'button')
+    self.dom.setAttribute('class', 'button button2')
 
     // overwrite margins.  The old way was not working.
     let fixMargin = buttonConfig.margin

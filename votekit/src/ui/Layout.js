@@ -1,9 +1,12 @@
+/** @module */
+
 /**
  * Layout keeps an internal ordered list of div names.
  * It creates a parent div to fill with these divs.
  * New divs are added according to the order of the names.
  * If the new div isn't in the list, then it is added at the end of the parent div.
  * @param {String[]} - Names in an ordered list for the layout.
+ * @constructor
  */
 export default function Layout(order) {
     const self = this
@@ -16,7 +19,7 @@ export default function Layout(order) {
      * @param {String} name
      * @param {HTMLElement} div
      */
-    self.newDiv = (name, div) => {
+    self.newElement = (name, div) => {
         if (order.includes(name)) {
             divsByName[name] = div
         } else {

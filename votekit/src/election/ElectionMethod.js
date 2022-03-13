@@ -6,6 +6,7 @@ import electionMethods from '../electionMethods/electionMethods.js'
  * Store settings and functions that deal with the election method.
  * @param {Candidate[]} candidates
  * @param {Menu} menu
+ * @constructor
  */
 export default function ElectionMethod(menu) {
     const self = this
@@ -50,12 +51,19 @@ export default function ElectionMethod(menu) {
 
     // add a menu item to switch between types of elections
     self.electionMethod = 'plurality'
+
+    /**
+     * Called in onclick.
+     * @param {(String|Number|Boolean)} value
+     */
+    self.setElectionMethod = (value) => { self.electionMethod = value }
+
     menu.addMenuItem(
         self,
         {
             label: 'Election Method:',
             prop: 'electionMethod',
-            setProp: (p) => { self.electionMethod = p },
+            setProp: self.setElectionMethod,
             options: self.electionMethodList,
             change: ['electionMethod'],
         },

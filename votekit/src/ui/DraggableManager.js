@@ -3,8 +3,10 @@
 /**
  * Draggable Manager gives draggable behavior to objects on a canvas.
  * If anything changes, an item is added to the "changes" array.
+ * Calling screen.setEventHandlers(dragm.eventHandlers) sets the eventhandlers on the screen.
  * @param {Screen} screen
  * @param {Changes} changes
+ * @constructor
  */
 export default function DraggableManager(screen, changes) {
     const self = this
@@ -25,11 +27,8 @@ export default function DraggableManager(screen, changes) {
         const p = { isCircle: true }
         draggables.push({ o, g, p })
     }
-    self.clear = () => {
-        draggables.splice(0, draggables.length)
-    }
 
-    // mouse controls
+    // Mouse Listeners
     // As a sidenote, it is interesting that we don't need to call model.update here
     // because we are using a game loop that will call model.update.
     const start = function (event) {
@@ -40,7 +39,7 @@ export default function DraggableManager(screen, changes) {
         const nd = draggables.length
         for (let i = 0; i < nd; i++) {
             const d = draggables[i]
-            if (hitTest(d, mouse, extra)) {
+            if (d.o.exists && hitTest(d, mouse, extra)) {
                 if (event.isTouch) {
                     event.preventDefault()
                     event.stopPropagation()
@@ -64,13 +63,6 @@ export default function DraggableManager(screen, changes) {
         drag = {}
     }
 
-    // mouse up outside of canvas
-    const current = document.onmouseup
-    document.onmouseup = () => {
-        if (current) current()
-        canvas.onmouseup()
-    }
-
     const move = function (event) {
         const mouse = {}
         mouse.x = event.offsetX
@@ -81,8 +73,7 @@ export default function DraggableManager(screen, changes) {
                 event.stopPropagation()
             }
             const dragging = draggables[drag.iDragging]
-            dragging.o.setX(mouse.x + drag.offX) // updates state.config too
-            dragging.o.setY(mouse.y + drag.offY)
+            dragging.o.setXY({ x: mouse.x + drag.offX, y: mouse.y + drag.offY })
             changes.add(['draggables'])
         } else {
             // see if we're hovering over something grabbable
@@ -90,7 +81,7 @@ export default function DraggableManager(screen, changes) {
             const nd = draggables.length
             for (let i = 0; i < nd; i++) {
                 const d = draggables[i]
-                if (hitTest(d, mouse, 0)) {
+                if (d.o.exists && hitTest(d, mouse, 0)) {
                     canvas.dataset.cursor = 'grab'
                     return
                 }
@@ -98,24 +89,30 @@ export default function DraggableManager(screen, changes) {
             canvas.dataset.cursor = '' // nothing to grab
         }
     }
-    canvas.onmousedown = start
-    canvas.onmousemove = move
-    canvas.onmouseup = end
-    canvas.addEventListener('touchmove', (e) => {
+
+    // Touch Listeners
+    const touchmove = (e) => {
         const pass = passTouch(e)
         move(pass)
-    })
-    canvas.addEventListener('touchstart', (e) => {
+    }
+    const touchstart = (e) => {
         const pass = passTouch(e)
         start(pass)
-    })
-    canvas.addEventListener('touchend', (e) => {
+    }
+    const touchend = (e) => {
         const pass = passTouch(e)
         end(pass)
-    })
-    canvas.touchmove = move
-    canvas.touchend = canvas.onmouseup
+    }
 
+    self.eventHandlers = {
+        start, move, end, touchmove, touchstart, touchend,
+    }
+
+    /**
+     * Make a touch event look like a mouse event, with a flag.
+     * @param {Event} e - The event from the DOM
+     * @returns {Event} - The same event it received, plus some added properties.
+     */
     function passTouch(e) {
         const rect = e.target.getBoundingClientRect()
         const w = e.target.clientWidth
@@ -131,6 +128,13 @@ export default function DraggableManager(screen, changes) {
         return e
     }
 
+    /**
+     * Check whether m, e.g. a mouse, hits d, a draggable object.
+     * @param {Object} d - An entry in the draggables array.
+     * @param {Object} m - An object with properties x and y, e.g. a mouse.
+     * @param {Number} extra - Extra slack to catch touches outside of the hitbox.
+     * @returns {Boolean} - Whether m hits d.
+     */
     function hitTest(d, m, extra) {
         // Only drag an object if we're near it.
         const x = d.o.x - m.x

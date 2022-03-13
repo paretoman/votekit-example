@@ -1,9 +1,10 @@
 /** @module */
 
-import SampleVoterCircle from '../entities/SampleVoterCircle.js'
-import CandidateDistribution from '../entities/CandidateDistribution.js'
-import Voters from '../../election/Voters.js'
-import SampleCandidates from '../../election/SampleCandidates.js'
+import SimCandidateDistributionList from '../../candidates/SimCandidateDistributionList.js'
+import SimCandidateDistribution from '../../candidates/SimCandidateDistribution.js'
+import SampleVoterCircle from '../../voters/SampleVoterCircle.js'
+import SimVoterList from '../../voters/SimVoterList.js'
+import SimBase from './SimBase.js'
 
 /**
  * Simulate many sample elections with
@@ -14,24 +15,39 @@ import SampleCandidates from '../../election/SampleCandidates.js'
  * @param {Menu} menu
  * @param {Changes} changes
  * @param {SimElection} sampleElections
+ * @param {Object} canDnButton - a button that lets us add a candidateDistribution
+ * @constructor
  */
-export default function SimSample(screen, dragm, menu, changes, sampleElections) {
+export default function SimSample(screen, dragm, menu, changes, sampleElections, canDnButton) {
     const self = this
 
-    const voters = new Voters()
-    const sampleCandidates = new SampleCandidates()
-    const cd = new CandidateDistribution(150, 150, 100, screen, dragm, sampleCandidates)
-    const ci = new SampleVoterCircle(50, 150, 100, screen, dragm, voters)
-    const ci2 = new SampleVoterCircle(250, 150, 100, screen, dragm, voters)
+    SimBase.call(self, dragm, screen)
 
-    self.clear = () => {
-        sampleCandidates.clear()
-        voters.clear()
+    const simCandidateList = new SimCandidateDistributionList()
+
+    self.addSimCandidateDistribution = (canDn) => {
+        simCandidateList.newCandidate(new SimCandidateDistribution(canDn, dragm))
+    }
+
+    const sampleVoters = new SimVoterList()
+
+    self.addSimVoterCircle = (voterCircle) => {
+        sampleVoters.newVoterGroup(new SampleVoterCircle(voterCircle, dragm, screen))
+    }
+
+    const superEnter = self.enter
+    self.enter = () => {
+        superEnter()
+        canDnButton.show()
+    }
+
+    self.exit = () => {
+        canDnButton.hide()
     }
 
     self.update = () => {
         if (changes.checkNone()) {
-            const noChange = sampleElections.addSim(voters, sampleCandidates)
+            const noChange = sampleElections.addSim(sampleVoters, simCandidateList)
             if (!noChange) {
                 changes.clear()
                 // changed, so re-render
@@ -41,7 +57,7 @@ export default function SimSample(screen, dragm, menu, changes, sampleElections)
         } else {
             // clear changes, reset to []
             changes.clear()
-            sampleCandidates.startSampler()
+            simCandidateList.startSampler()
             sampleElections.startSim()
             screen.clear()
             self.render()
@@ -50,14 +66,11 @@ export default function SimSample(screen, dragm, menu, changes, sampleElections)
 
     self.render = () => {
         sampleElections.render()
-        ci.render()
-        ci2.render()
-        cd.render()
+        sampleVoters.render()
+        simCandidateList.render()
     }
     self.renderForeground = () => {
-        // sampleElections.renderForeground()
-        ci.renderForeground()
-        ci2.renderForeground()
-        cd.renderForeground()
+        sampleVoters.renderForeground()
+        simCandidateList.renderForeground()
     }
 }

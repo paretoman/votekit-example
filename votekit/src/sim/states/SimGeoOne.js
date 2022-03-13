@@ -1,10 +1,10 @@
 /** @module */
 
-import GeoVoterBasis from '../entities/GeoVoterBasis.js'
-import GeoCandidate from '../entities/GeoCandidate.js'
-import GeoVoters from '../../election/GeoVoters.js'
-import Candidates from '../../election/Candidates.js'
-
+import GeoVoterBasis from '../../voters/GeoVoterBasis.js'
+import SimCandidate from '../../candidates/SimCandidate.js'
+import SimCandidateList from '../../candidates/SimCandidateList.js'
+import GeoVoters from '../../voters/GeoVoters.js'
+import SimBase from './SimBase.js'
 /**
  * Simulate one election with
  *   candidates in defined positions, and
@@ -15,47 +15,58 @@ import Candidates from '../../election/Candidates.js'
  * @param {Menu} menu
  * @param {Changes} changes
  * @param {Election} election
+ * @param {Object} canButton - a button that lets us add a candidate
+ * @constructor
  */
-export default function SimOne(screen, dragm, menu, changes, geoElection) {
+export default function SimGeoOne(screen, dragm, menu, changes, geoElection, canButton) {
     const self = this
 
+    SimBase.call(self, dragm, screen)
+
     const geoVoters = new GeoVoters(screen, geoElection)
-    const candidates = new Candidates()
-    const c1 = new GeoCandidate(50, 100, 21, 21, '#e52', screen, dragm, candidates)
-    const c2 = new GeoCandidate(100, 50, 21, 21, '#5e2', screen, dragm, candidates)
-    const c3 = new GeoCandidate(300 - 100, 300 - 50, 21, 21, '#25e', screen, dragm, candidates)
-    const vb = new GeoVoterBasis(150, 150, 100, screen, dragm, geoVoters)
+
+    const simCandidateList = new SimCandidateList()
+
+    self.addSimCandidate = (candidate) => {
+        simCandidateList.newCandidate(new SimCandidate(candidate, dragm))
+    }
+
+    self.addSimVoterCircle = (voterCircle) => {
+        geoVoters.newVoterGroup(new GeoVoterBasis(voterCircle, dragm, screen))
+    }
+
     changes.add(['districts'])
 
-    screen.showGeoMaps()
+    const superEnter = self.enter
+    self.enter = () => {
+        superEnter()
+        screen.showGeoMaps()
+        canButton.show()
+    }
 
-    self.clear = () => {
-        candidates.clear()
-        geoVoters.clear()
+    self.exit = () => {
         screen.hideGeoMaps()
+        canButton.hide()
     }
 
     self.update = () => {
         if (changes.checkNone()) return
         // clear changes, reset to []
-        if (changes.check(['districts'])) {
+        if (changes.check(['districts', 'simType'])) {
             geoVoters.updateDistricts()
         }
         changes.clear()
-        geoVoters.updateVoters()
-        geoElection.updateVotes(geoVoters, candidates)
+        geoVoters.updateVoters() // can make this only trigger when voters change
+        geoElection.updateVotes(geoVoters, simCandidateList)
         screen.clear()
         self.render()
     }
 
     self.render = () => {
         geoVoters.render()
-        vb.render()
     }
     self.renderForeground = () => {
-        c1.renderForeground()
-        c2.renderForeground()
-        c3.renderForeground()
-        vb.renderForeground()
+        simCandidateList.renderForeground()
+        geoVoters.renderForeground()
     }
 }

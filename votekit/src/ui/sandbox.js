@@ -1,7 +1,6 @@
 /** @module */
 
 import Changes from './Changes.js'
-import DraggableManager from './DraggableManager.js'
 import Screen from './Screen.js'
 import addSVGOutput from './addSVGOutput.js'
 import Menu from '../menu/Menu.js'
@@ -11,29 +10,53 @@ import SampleElections from '../election/SampleElections.js'
 import GeoElection from '../election/GeoElection.js'
 import Layout from './Layout.js'
 import OneElection from '../election/OneElection.js'
+import Commander from './Commander.js'
+import addUndo from './addUndo.js'
+import addSaveConfigToText from './addSaveConfigToText.js'
+import addLoadConfigText from './loadConfigText.js'
+import addSaveConfigToLink from './addSaveConfigToLink.js'
 
 /**
  * Set up a user interface to run a simulation.
- * @param {Object} config
- * @param {String} config.idScript - The id of an element.
- * We will append the user interface as a sibling.
- * @param {String} config.initialState - The game state of the simulation to load initially.
+ * @param {Object} config - An object containing commands. A command is a {name,value} pair.
  */
-export default function sandbox(config) {
-    const { initialState } = config
-
+export default function sandbox(config, comMessenger, sandboxURL) {
     // manage dependent calculations because we only want to do calculations if we need to
     const changes = new Changes()
 
-    const layout = new Layout(['menu', 'screen', 'foreground', 'geoMaps', 'svgUIDiv'])
+    const layout = new Layout([
+        'menu',
+        'simControlsLabel',
+        'addVoter',
+        'addCandidate',
+        'addCandidateDistribution',
+        'undo',
+        'redo',
+        'clearDiv',
+        'screen',
+        'foreground',
+        'geoMaps',
+        'saveConfigToLink',
+        'saveConfigToText',
+        'loadConfigText',
+        'svgUIDiv',
+    ])
 
-    const menu = new Menu(changes, layout)
+    const commander = new Commander(comMessenger)
+
+    const menu = new Menu(changes, layout, commander)
+
+    addUndo(layout, commander)
+
+    addSaveConfigToLink(layout, commander, sandboxURL)
+
+    addSaveConfigToText(layout, commander)
+
+    addLoadConfigText(layout, commander)
 
     const screen = new Screen(300, 300, layout)
 
     addSVGOutput(screen, draw, layout)
-
-    const dragm = new DraggableManager(screen, changes)
 
     const election = new Election(menu)
 
@@ -44,7 +67,10 @@ export default function sandbox(config) {
     const geoElection = new GeoElection(screen, menu, election)
 
     // eslint-disable-next-line max-len
-    const sim = new Sim(screen, dragm, menu, changes, election, oneElection, sampleElections, geoElection, initialState)
+    const sim = new Sim(screen, menu, changes, oneElection, sampleElections, geoElection, commander, layout)
+
+    commander.loadConfig(config)
+    commander.clearHistory()
 
     const div = layout.makeComponent()
 
