@@ -1,0 +1,3 @@
+
+.site-nav {z-index: 1;}
+.site-nav label[for="nav-trigger"] { z-index: 2;  }
