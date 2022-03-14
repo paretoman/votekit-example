@@ -153,7 +153,10 @@ export default function Commander(comMessenger) {
         if (id === undefined) {
             currentValue = config[name]
         } else {
-            currentValue = command.currentValue
+            currentValue = config[name][id]
+            if (currentValue === undefined) {
+                currentValue = command.currentValue
+            }
         }
 
         // Store how to undo the command.
@@ -165,12 +168,12 @@ export default function Commander(comMessenger) {
         // example: head:-1 means history will be cleared splice(0,length)
         history.splice(head + 1, history.length - (head + 1))
 
+        // Actually preform the command.
+        execute(command)
+
         // Add command to history
         history.push([{ command, undoCommand }])
         head += 1
-
-        // Actually preform the command.
-        execute(command)
     }
     /**
      * Do a set of commands together, so they have one history item.
@@ -187,7 +190,10 @@ export default function Commander(comMessenger) {
             if (id === undefined) {
                 currentValue = config[name]
             } else {
-                currentValue = command.currentValue
+                currentValue = config[name][id]
+                if (currentValue === undefined) {
+                    currentValue = command.currentValue
+                }
             }
 
             // Store how to undo the command.
@@ -212,8 +218,8 @@ export default function Commander(comMessenger) {
     }
 
     // control the duration of the setXY undos with a timeout. Here's a default timeout.
-    const xyDuration = 30
-    let xyTimer = setTimeout(() => null, xyDuration)
+    const chainDuration = 30
+    let chainTimer = setTimeout(() => null, chainDuration)
 
     self.undo = () => {
         if (head === -1) return // There is no history
@@ -226,14 +232,14 @@ export default function Commander(comMessenger) {
         // If we're in a setXY chain, then continue with another undo after a pause.
         const { undoCommand } = last[0]
         if (undoCommand.props === undefined) return
-        if (undoCommand.props.isSetXY !== true) return
+        if (undoCommand.props.isChain !== true) return
         if (head === -1) return
         const penUltimate = history[head][0]
         if (penUltimate.undoCommand.name === undoCommand.name) {
             // todo: make this only work for repeated setXY commands
             // set timer and callback
-            clearTimeout(xyTimer)
-            xyTimer = setTimeout(self.undo, xyDuration)
+            clearTimeout(chainTimer)
+            chainTimer = setTimeout(self.undo, chainDuration)
         }
     }
 
@@ -248,14 +254,14 @@ export default function Commander(comMessenger) {
         // If we're in a setXY chain, then continue with another redo after a pause.
         const { command } = next[0]
         if (command.props === undefined) return
-        if (command.props.isSetXY !== true) return
+        if (command.props.isChain !== true) return
         if (head === history.length - 1) return
         const nextnext = history[head + 1][0]
         if (nextnext.command.name === command.name) {
             // todo: make this only work for repeated setXY commands
             // set timer and callback
-            clearTimeout(xyTimer)
-            xyTimer = setTimeout(self.redo, xyDuration)
+            clearTimeout(chainTimer)
+            chainTimer = setTimeout(self.redo, chainDuration)
         }
     }
 

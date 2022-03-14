@@ -15,6 +15,7 @@ export default function CandidateCommander(candidateRegistrar, commander, sim) {
 
     self.setEClientList = commander.addClientList({
         action: (id, e) => {
+            self.setNumberCandidates(id + 1)
             const candidate = candidateRegistrar.get(id)
             candidate.setEAction(e)
         },
@@ -23,11 +24,12 @@ export default function CandidateCommander(candidateRegistrar, commander, sim) {
 
     self.setXYClientList = commander.addClientList({
         action: (id, p) => {
+            self.setNumberCandidates(id + 1)
             const candidate = candidateRegistrar.get(id)
             candidate.setXYAction(p)
         },
         name: `${prefix}-setXY`,
-        props: { isSetXY: true },
+        props: { isChain: true },
     })
 
     // This is kind of weird because this value is not a good measure of the number of entities.

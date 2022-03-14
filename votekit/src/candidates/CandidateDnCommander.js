@@ -15,6 +15,7 @@ export default function CandidateDnCommander(candidateDnRegistrar, commander, si
 
     self.setEClientList = commander.addClientList({
         action: (id, e) => {
+            self.setNumberCandidateDns(id + 1)
             const candidateDn = candidateDnRegistrar.get(id)
             candidateDn.setEAction(e)
         },
@@ -23,15 +24,17 @@ export default function CandidateDnCommander(candidateDnRegistrar, commander, si
 
     self.setXYClientList = commander.addClientList({
         action: (id, p) => {
+            self.setNumberCandidateDns(id + 1)
             const candidateDn = candidateDnRegistrar.get(id)
             candidateDn.setXYAction(p)
         },
         name: `${prefix}-setXY`,
-        props: { isSetXY: true },
+        props: { isChain: true },
     })
 
     self.setRClientList = commander.addClientList({
         action: (id, r) => {
+            self.setNumberCandidateDns(id + 1)
             const candidateDn = candidateDnRegistrar.get(id)
             candidateDn.setRAction(r)
         },
