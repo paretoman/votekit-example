@@ -8,8 +8,8 @@ import { drawStrokedColor, textPercent } from '../utilities/graphicsUtilities.js
  * Candidate adds candidate behavior on top of a draggable handle handle.
  * @param {Number} x
  * @param {Number} y
- * @param {Number} w
- * @param {Number} h
+ * @param {Number} wHandle
+ * @param {Number} hHandle
  * @param {String} color
  * @param {Screen} screen
  * @param {Registrar} candidateRegistrar
@@ -19,10 +19,10 @@ import { drawStrokedColor, textPercent } from '../utilities/graphicsUtilities.js
  * @constructor
  */
 export default function Candidate(
-    x,
-    y,
-    w,
-    h,
+    p2,
+    p1,
+    wHandle,
+    hHandle,
     color,
     screen,
     candidateRegistrar,
@@ -30,6 +30,7 @@ export default function Candidate(
     changes,
     doLoad,
     candidateCommander,
+    sim,
 ) {
     const self = this
 
@@ -40,13 +41,14 @@ export default function Candidate(
     // use commands to instantiate variables
     self.instantiate = () => {
         // set current value because we need to be able to undo by returning to these values
-        // candidateCommander.setEClientList.setCurrentValue(id, 0)
-        // candidateCommander.setXYClientList.setCurrentValue(id, { x, y })
+        // candidateCommander.setESenderForList.setCurrentValue(id, 0)
+        // candidateCommander.setXYSenderForList.setCurrentValue(id, { x, y })
 
         const commands = [
-            // candidateCommander.setNumberCandidatesClient.command(id + 1),
-            candidateCommander.setEClientList.command(id, 1, 0), // set alive flag
-            candidateCommander.setXYClientList.command(id, { x, y }, { x, y }),
+            // candidateCommander.setNumberCandidatesSender.command(id + 1),
+            candidateCommander.setESenderForList.command(id, 1, 0), // set alive flag
+            candidateCommander.setP2SenderForList.command(id, p2, p2),
+            candidateCommander.setP1SenderForList.command(id, p1, p1),
         ]
         // Either load the commands because we don't want to create an item of history
         // Or do the commands because want to store an item in history, so that we can undo.
@@ -61,23 +63,49 @@ export default function Candidate(
         changes.add(['draggables'])
     }
     self.setE = (e) => {
-        const cur = candidateCommander.setEClientList.getCurrentValue(id)
-        candidateCommander.setEClientList.go(id, e, cur)
+        const cur = candidateCommander.setESenderForList.getCurrentValue(id)
+        candidateCommander.setESenderForList.go(id, e, cur)
     }
 
-    self.setXYAction = (p) => {
-        self.x = p.x
-        self.y = p.y
+    self.setP2Action = (p) => {
+        self.p2 = structuredClone(p)
+        if (sim.election.dimensions === 2) {
+            self.x = p.x
+            self.y = p.y
+        }
+        changes.add(['draggables'])
+    }
+    self.setP1Action = (p) => {
+        self.p1 = p
+        if (sim.election.dimensions === 1) {
+            self.x = p
+            self.y = 250
+        }
         changes.add(['draggables'])
     }
     self.setXY = (p) => {
-        const cur = candidateCommander.setXYClientList.getCurrentValue(id)
-        candidateCommander.setXYClientList.go(id, p, cur)
+        if (sim.election.dimensions === 1) {
+            const cur = candidateCommander.setP1SenderForList.getCurrentValue(id)
+            candidateCommander.setP1SenderForList.go(id, p.x, cur)
+        } else {
+            const cur = candidateCommander.setP2SenderForList.getCurrentValue(id)
+            candidateCommander.setP2SenderForList.go(id, p, cur)
+        }
+    }
+    /** Do this when entering a state because x and y change.
+     *  Maybe x and y should be in the SimCandidate instead... just speculating. */
+    self.updateXY = () => {
+        if (sim.election.dimensions === 1) {
+            self.setP1Action(self.p1)
+        } else {
+            self.setP2Action(self.p2)
+        }
     }
 
     self.instantiate()
 
-    const square = new SquareGraphic(self, w, h, color, screen) // square is for rendering
+    // square is for rendering
+    const square = new SquareGraphic(self, wHandle, hHandle, color, screen)
     self.square = square
 
     self.fraction = 0

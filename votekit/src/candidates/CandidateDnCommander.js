@@ -1,7 +1,7 @@
 /** @module */
 
 /**
- * Register clients with the commander for setting entity values.
+ * Register senders with the commander for setting entity values.
  * This is here because we need an action that takes an id.
  * @param {Registrar} candidateDnRegistrar
  * @param {Commander} commander
@@ -13,39 +13,49 @@ export default function CandidateDnCommander(candidateDnRegistrar, commander, si
 
     const prefix = 'candidateDns'
 
-    self.setEClientList = commander.addClientList({
+    self.setESenderForList = commander.addSenderForList({
         action: (id, e) => {
             self.setNumberCandidateDns(id + 1)
             const candidateDn = candidateDnRegistrar.get(id)
             candidateDn.setEAction(e)
         },
-        name: `${prefix}-setE`,
+        name: `${prefix}-exists`,
     })
 
-    self.setXYClientList = commander.addClientList({
+    self.setP2SenderForList = commander.addSenderForList({
         action: (id, p) => {
             self.setNumberCandidateDns(id + 1)
             const candidateDn = candidateDnRegistrar.get(id)
-            candidateDn.setXYAction(p)
+            candidateDn.setP2Action(p)
         },
-        name: `${prefix}-setXY`,
+        name: `${prefix}-2D-point`,
         props: { isChain: true },
     })
 
-    self.setRClientList = commander.addClientList({
-        action: (id, r) => {
+    self.setP1SenderForList = commander.addSenderForList({
+        action: (id, p) => {
             self.setNumberCandidateDns(id + 1)
             const candidateDn = candidateDnRegistrar.get(id)
-            candidateDn.setRAction(r)
+            candidateDn.setP1Action(p)
         },
-        name: `${prefix}-setR`,
+        name: `${prefix}-1D-x`,
+        props: { isChain: true },
+    })
+
+    self.setW2SenderForList = commander.addSenderForList({
+        action: (id, w2) => {
+            self.setNumberCandidateDns(id + 1)
+            const candidateDn = candidateDnRegistrar.get(id)
+            candidateDn.setW2Action(w2)
+        },
+        name: `${prefix}-2D-width`,
     })
 
     // This is kind of weird because this value is not a good measure of the number of entities.
     // An undo will reduce the number stored with the command name,
     // but not reduce the number of entities.
     // So we disable undo.
-    self.setNumberCandidateDnsClient = commander.addClient({
+    self.setNumberCandidateDnsSender = commander.addSender({
         action: (num) => {
             sim.setNumberCandidateDnsAction(num)
         },
@@ -54,6 +64,6 @@ export default function CandidateDnCommander(candidateDnRegistrar, commander, si
         props: { isFirstAction: true },
     })
     self.setNumberCandidateDns = (num) => {
-        commander.loadCommands([self.setNumberCandidateDnsClient.command(num)])
+        commander.loadCommands([self.setNumberCandidateDnsSender.command(num)])
     }
 }

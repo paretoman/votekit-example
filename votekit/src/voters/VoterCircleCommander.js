@@ -1,57 +1,85 @@
 /** @module */
 
 /**
- * Register clients with the commander for setting entity values.
+ * Register senders with the commander for setting entity values.
  * This is here because we need an action that takes an id.
  * @param {Registrar} voterRegistrar
  * @param {Commander} commander
- * @param {Sim} sim
+ * @param {SimAddVoters} simAddVoters
  * @constructor
  */
-export default function VoterCircleCommander(voterRegistrar, commander, sim) {
+export default function VoterCircleCommander(voterRegistrar, commander, simAddVoters) {
     const self = this
 
     const prefix = 'voters'
 
-    self.setEClientList = commander.addClientList({
+    self.setESenderForList = commander.addSenderForList({
         action: (id, e) => {
             self.setNumberVoters(id + 1)
             const voter = voterRegistrar.get(id)
             voter.setEAction(e)
         },
-        name: `${prefix}-setE`,
+        name: `${prefix}-exists`,
     })
 
-    self.setXYClientList = commander.addClientList({
+    self.setP2SenderForList = commander.addSenderForList({
         action: (id, p) => {
             self.setNumberVoters(id + 1)
             const voter = voterRegistrar.get(id)
-            voter.setXYAction(p)
+            voter.setP2Action(p)
         },
-        name: `${prefix}-setXY`,
+        name: `${prefix}-2D-point`,
         props: { isChain: true },
     })
 
-    self.setRClientList = commander.addClientList({
-        action: (id, r) => {
+    self.setP1SenderForList = commander.addSenderForList({
+        action: (id, p) => {
             self.setNumberVoters(id + 1)
             const voter = voterRegistrar.get(id)
-            voter.setRAction(r)
+            voter.setP1Action(p)
         },
-        name: `${prefix}-setR`,
+        name: `${prefix}-1D-x`,
+        props: { isChain: true },
+    })
+
+    self.setW2SenderForList = commander.addSenderForList({
+        action: (id, w) => {
+            self.setNumberVoters(id + 1)
+            const voter = voterRegistrar.get(id)
+            voter.setW2Action(w)
+        },
+        name: `${prefix}-2D-width`,
+    })
+
+    self.setW1SenderForList = commander.addSenderForList({
+        action: (id, w) => {
+            self.setNumberVoters(id + 1)
+            const voter = voterRegistrar.get(id)
+            voter.setW1Action(w)
+        },
+        name: `${prefix}-1D-width`,
+    })
+
+    self.setDensityProfile1SenderForList = commander.addSenderForList({
+        action: (id, dp1) => {
+            self.setNumberVoters(id + 1)
+            const voter = voterRegistrar.get(id)
+            voter.setDensityProfile1Action(dp1)
+        },
+        name: `${prefix}-1D-densityProfile`,
     })
 
     // This is kind of weird because this value is not a good measure of the number of entities.
     // An undo will reduce the number stored with the command name,
     // but not reduce the number of entities.
     // So we disable undo.
-    self.setNumberVotersClient = commander.addClient({
-        action: (num) => sim.setNumberVotersAction(num),
+    self.setNumberVotersSender = commander.addSender({
+        action: (num) => simAddVoters.setNumberVotersAction(num),
         currentValue: 0,
         name: `${prefix}-setNumberAtLeast`,
         props: { isFirstAction: true },
     })
     self.setNumberVoters = (num) => {
-        commander.loadCommands([self.setNumberVotersClient.command(num)])
+        commander.loadCommands([self.setNumberVotersSender.command(num)])
     }
 }

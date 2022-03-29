@@ -1,7 +1,7 @@
 /** @module */
 
 /**
- * Register clients with the commander for setting entity values.
+ * Register senders with the commander for setting entity values.
  * This is here because we need an action that takes an id.
  * @param {Registrar} candidateRegistrar
  * @param {Commander} commander
@@ -13,22 +13,32 @@ export default function CandidateCommander(candidateRegistrar, commander, sim) {
 
     const prefix = 'candidates'
 
-    self.setEClientList = commander.addClientList({
+    self.setESenderForList = commander.addSenderForList({
         action: (id, e) => {
             self.setNumberCandidates(id + 1)
             const candidate = candidateRegistrar.get(id)
             candidate.setEAction(e)
         },
-        name: `${prefix}-setE`,
+        name: `${prefix}-exists`,
     })
 
-    self.setXYClientList = commander.addClientList({
+    self.setP2SenderForList = commander.addSenderForList({
         action: (id, p) => {
             self.setNumberCandidates(id + 1)
             const candidate = candidateRegistrar.get(id)
-            candidate.setXYAction(p)
+            candidate.setP2Action(p)
         },
-        name: `${prefix}-setXY`,
+        name: `${prefix}-2D-point`,
+        props: { isChain: true },
+    })
+
+    self.setP1SenderForList = commander.addSenderForList({
+        action: (id, p) => {
+            self.setNumberCandidates(id + 1)
+            const candidate = candidateRegistrar.get(id)
+            candidate.setP1Action(p)
+        },
+        name: `${prefix}-1D-x`,
         props: { isChain: true },
     })
 
@@ -37,7 +47,7 @@ export default function CandidateCommander(candidateRegistrar, commander, sim) {
     // but not reduce the number of entities.
     // So we disable undo.
     // Well, actually we can just loadCommands in order to avoid undo.
-    self.setNumberCandidatesClient = commander.addClient({
+    self.setNumberCandidatesSender = commander.addSender({
         action: (num) => {
             sim.setNumberCandidatesAction(num)
         },
@@ -46,6 +56,6 @@ export default function CandidateCommander(candidateRegistrar, commander, sim) {
         props: { isFirstAction: true },
     })
     self.setNumberCandidates = (num) => {
-        commander.loadCommands([self.setNumberCandidatesClient.command(num)])
+        commander.loadCommands([self.setNumberCandidatesSender.command(num)])
     }
 }

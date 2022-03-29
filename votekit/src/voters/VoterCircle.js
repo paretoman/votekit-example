@@ -7,7 +7,7 @@ import CircleGraphic from './CircleGraphic.js'
  * VoronoiGroup component takes care of drawing votes.
  * @param {Number} x
  * @param {Number} y
- * @param {Number} r - radius of circle of candidate positions.
+ * @param {Number} w - width of circle of candidate positions.
  * @param {Screen} screen
  * @param {Registrar} voterRegistrar
  * @param {Commander} commander
@@ -16,15 +16,18 @@ import CircleGraphic from './CircleGraphic.js'
  * @constructor
  */
 export default function VoterCircle(
-    x,
-    y,
-    r,
+    p2,
+    p1,
+    w2,
+    w1,
+    densityProfile1,
     screen,
     voterRegistrar,
     commander,
     changes,
     doLoad,
     voterCommander,
+    sim,
 ) {
     const self = this
 
@@ -37,14 +40,18 @@ export default function VoterCircle(
     // use commands to instantiate variables
     self.instantiate = () => {
         // set current value because we need to be able to undo by returning to these values
-        // voterCommander.setEClientList.setCurrentValue(id, 0)
-        // voterCommander.setXYClientList.setCurrentValue(id, { x, y })
-        // voterCommander.setRClientList.setCurrentValue(id, r)
+        // voterCommander.setESenderForList.setCurrentValue(id, 0)
+        // voterCommander.setXYSenderForList.setCurrentValue(id, { x, y })
+        // voterCommander.setWSenderForList.setCurrentValue(id, w2)
 
         const commands = [
-            voterCommander.setEClientList.command(id, 1, 0), // set alive flag
-            voterCommander.setXYClientList.command(id, { x, y }, { x, y }),
-            voterCommander.setRClientList.command(id, r, r),
+            voterCommander.setESenderForList.command(id, 1, 0), // set alive flag
+            voterCommander.setP2SenderForList.command(id, p2, p2),
+            voterCommander.setP1SenderForList.command(id, p1, p1),
+            voterCommander.setW2SenderForList.command(id, w2, w2),
+            voterCommander.setW1SenderForList.command(id, w1, w1),
+            voterCommander
+                .setDensityProfile1SenderForList.command(id, densityProfile1, densityProfile1),
         ]
         // Either load the commands because we don't want to create an item of history
         // Or do the commands because want to store an item in history, so that we can undo.
@@ -60,34 +67,78 @@ export default function VoterCircle(
         changes.add(['draggables'])
     }
     self.setE = (e) => {
-        const cur = voterCommander.setEClientList.getCurrentValue(id)
-        voterCommander.setEClientList.go(id, e, cur)
+        const cur = voterCommander.setESenderForList.getCurrentValue(id)
+        voterCommander.setESenderForList.go(id, e, cur)
     }
 
-    self.setXYAction = (p) => {
-        self.x = p.x
-        self.y = p.y
+    self.setP2Action = (p) => {
+        self.p2 = structuredClone(p)
+        if (sim.election.dimensions === 2) {
+            self.x = p.x
+            self.y = p.y
+        }
+        changes.add(['draggables'])
+    }
+    self.setP1Action = (p) => {
+        self.p1 = p
+        if (sim.election.dimensions === 1) {
+            self.x = p
+            self.y = 250
+        }
         changes.add(['draggables'])
     }
     self.setXY = (p) => {
-        const cur = voterCommander.setXYClientList.getCurrentValue(id)
-        voterCommander.setXYClientList.go(id, p, cur)
+        if (sim.election.dimensions === 1) {
+            const cur = voterCommander.setP1SenderForList.getCurrentValue(id)
+            voterCommander.setP1SenderForList.go(id, p.x, cur)
+        } else {
+            const cur = voterCommander.setP2SenderForList.getCurrentValue(id)
+            voterCommander.setP2SenderForList.go(id, p, cur)
+        }
+    }
+    /** Do this when entering a state because x and y change.
+     *  Maybe x and y should be in the SimVoter instead... just speculating. */
+    self.updateXY = () => {
+        if (sim.election.dimensions === 1) {
+            self.setP1Action(self.p1)
+        } else {
+            self.setP2Action(self.p2)
+        }
     }
 
-    self.setRAction = (newR) => {
-        self.r = newR
-        changes.add(['radius'])
+    self.setW2Action = (newW) => {
+        self.w2 = newW
+        changes.add(['width'])
     }
-    self.setR = (newR) => {
-        const cur = voterCommander.setRClientList.getCurrentValue(id)
-        voterCommander.setRClientList.go(id, newR, cur)
+    self.setW2 = (newW) => {
+        const cur = voterCommander.setW2SenderForList.getCurrentValue(id)
+        voterCommander.setW2SenderForList.go(id, newW, cur)
+    }
+
+    self.setW1Action = (newW) => {
+        self.w1 = newW
+        changes.add(['width'])
+    }
+    self.setW1 = (newW) => {
+        const cur = voterCommander.setW1SenderForList.getCurrentValue(id)
+        voterCommander.setW1SenderForList.go(id, newW, cur)
+    }
+
+    /** Density Profile can be "gaussian" or "step" */
+    self.setDensityProfile1Action = (newDensityProfile1) => {
+        self.densityProfile1 = newDensityProfile1
+        changes.add(['densityProfile'])
+    }
+    self.setDensityProfile1 = (newDensityProfile1) => {
+        const cur = voterCommander.setDensityProfile1SenderForList.getCurrentValue(id)
+        voterCommander.setDensityProfile1SenderForList.go(id, newDensityProfile1, cur)
     }
 
     self.instantiate()
 
     // Done instantiating variables
 
-    const circle = new CircleGraphic(self, 10, '#555', screen)
+    const circle = new CircleGraphic(self, 13, '#999', screen)
     self.circle = circle
 
     // Drawing

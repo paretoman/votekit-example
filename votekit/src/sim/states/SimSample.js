@@ -11,38 +11,40 @@ import SimBase from './SimBase.js'
  *   candidates in random positions within a distribution, and
  *   voters in a distribution that will be summed over.
  * @param {Screen} screen
- * @param {DraggableManager} dragm
  * @param {Menu} menu
  * @param {Changes} changes
  * @param {SimElection} sampleElections
- * @param {Object} canDnButton - a button that lets us add a candidateDistribution
+ * @param {Sim} sim
  * @constructor
  */
-export default function SimSample(screen, dragm, menu, changes, sampleElections, canDnButton) {
+export default function SimSample(screen, menu, changes, sampleElections, sim) {
     const self = this
 
-    SimBase.call(self, dragm, screen)
+    SimBase.call(self, screen, changes)
 
     const simCandidateList = new SimCandidateDistributionList()
 
     self.addSimCandidateDistribution = (canDn) => {
-        simCandidateList.newCandidate(new SimCandidateDistribution(canDn, dragm))
+        simCandidateList.newCandidate(new SimCandidateDistribution(canDn, self.dragm))
     }
 
     const sampleVoters = new SimVoterList()
 
     self.addSimVoterCircle = (voterCircle) => {
-        sampleVoters.newVoterGroup(new SampleVoterCircle(voterCircle, dragm, screen))
+        sampleVoters.newVoterGroup(new SampleVoterCircle(voterCircle, self.dragm, screen))
     }
 
     const superEnter = self.enter
     self.enter = () => {
         superEnter()
-        canDnButton.show()
+        sim.simAddCandidateDns.canDnButton.show()
+        sim.election.setDimensions(2)
+        sampleVoters.updateXY()
+        simCandidateList.updateXY()
     }
 
     self.exit = () => {
-        canDnButton.hide()
+        sim.simAddCandidateDns.canDnButton.hide()
     }
 
     self.update = () => {

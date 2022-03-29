@@ -3,17 +3,11 @@
 import SimOne from './states/SimOne.js'
 import SimSample from './states/SimSample.js'
 import SimGeoOne from './states/SimGeoOne.js'
-import VoterCircle from '../voters/VoterCircle.js'
-import Candidate from '../candidates/Candidate.js'
-import CandidateDistribution from '../candidates/CandidateDistribution.js'
-import Registrar from './Registrar.js'
-import DraggableManager from '../ui/DraggableManager.js'
-import createAddVoter from '../ui/createAddVoter.js'
-import CreateAddCandidate from '../ui/CreateAddCandidate.js'
-import CreateAddCandidateDistribution from '../ui/CreateAddCandidateDistribution.js'
-import CandidateCommander from '../candidates/CandidateCommander.js'
-import CandidateDnCommander from '../candidates/CandidateDnCommander.js'
-import VoterCircleCommander from '../voters/VoterCircleCommander.js'
+import SimAddVoters from './SimAddVoters.js'
+import SimAddCandidates from './SimAddCandidates.js'
+import SimAddCandidateDns from './SimAddCandidateDns.js'
+import addSimControlsLabel from './addSimControlsLabel.js'
+import SimOneDOne from './states/SimOneDOne.js'
 
 /**
  * Simulation is the main task we're trying to accomplish in this program.
@@ -35,6 +29,7 @@ export default function Sim(
     screen,
     menu,
     changes,
+    election,
     oneElection,
     sampleElections,
     geoElection,
@@ -43,108 +38,34 @@ export default function Sim(
 ) {
     const self = this
 
-    // Buttons //
+    // Components //
 
-    const label = document.createElement('div')
-    label.setAttribute('class', 'button-group-label')
-    label.innerText = 'Sim Controls:'
-    layout.newElement('simControlsLabel', label)
-
-    createAddVoter(layout, self)
-    const canButton = new CreateAddCandidate(layout, self)
-    const canDnButton = new CreateAddCandidateDistribution(layout, self)
+    self.election = election
 
     // States //
 
-    const voterRegistrar = new Registrar()
-    const candidateRegistrar = new Registrar()
-    const candidateDnRegistrar = new Registrar()
-
-    const dragms = {
-        one: new DraggableManager(screen, changes),
-        sample: new DraggableManager(screen, changes),
-        geoOne: new DraggableManager(screen, changes),
-    }
     const sims = {
-        one: new SimOne(screen, dragms.one, menu, changes, oneElection, canButton),
+        one: new SimOne(screen, menu, changes, oneElection, self),
+        oneDOne: new SimOneDOne(screen, menu, changes, oneElection, self),
         // eslint-disable-next-line max-len
-        sample: new SimSample(screen, dragms.sample, menu, changes, sampleElections, canDnButton),
-        geoOne: new SimGeoOne(screen, dragms.geoOne, menu, changes, geoElection, canButton),
+        sample: new SimSample(screen, menu, changes, sampleElections, self),
+        geoOne: new SimGeoOne(screen, menu, changes, geoElection, self),
     }
 
     // Entities //
 
-    const candidateCommander = new CandidateCommander(candidateRegistrar, commander, self)
-    const candidateDnCommander = new CandidateDnCommander(candidateDnRegistrar, commander, self)
-    const voterCommander = new VoterCircleCommander(voterRegistrar, commander, self)
+    self.simAddVoters = new SimAddVoters(screen, layout, changes, commander, sims, self)
+    self.simAddCandidates = new SimAddCandidates(screen, layout, changes, commander, sims, self)
+    self.simAddCandidateDns = new SimAddCandidateDns(screen, layout, changes, commander, sims, self)
 
-    self.addCandidatePressed = () => {
-        // really, we want to make a command to set numCandidates to at least an amount
-        const num = candidateRegistrar.num() + 1
-        candidateCommander.setNumberCandidates(num)
-    }
-    self.setNumberCandidatesAction = (num) => {
-        while (candidateRegistrar.num() < num) {
-            self.addCandidate(50, 50, 'yellow', false)
-        }
-    }
+    // Default Entities //
 
-    self.addCandidateDistributionPressed = () => {
-        const num = candidateDnRegistrar.num() + 1
-        candidateDnCommander.setNumberCandidateDns(num)
-    }
-    self.setNumberCandidateDnsAction = (num) => {
-        while (candidateDnRegistrar.num() < num) {
-            self.addCandidateDistribution(50, 50, 100, false)
-        }
-    }
-
-    self.addCandidate = (x, y, c, doLoad) => {
-        // eslint-disable-next-line no-new, max-len
-        const candidate = new Candidate(x, y, 21, 21, c, screen, candidateRegistrar, commander, changes, doLoad, candidateCommander)
-        sims.one.addSimCandidate(candidate)
-        sims.geoOne.addSimCandidate(candidate)
-
-        const num = candidateRegistrar.num()
-        candidateCommander.setNumberCandidates(num)
-    }
-    self.addCandidateDistribution = (x, y, r, doLoad) => {
-        // eslint-disable-next-line no-new, max-len
-        const candidateDistribution = new CandidateDistribution(x, y, r, screen, candidateDnRegistrar, commander, changes, doLoad, candidateDnCommander)
-        sims.sample.addSimCandidateDistribution(candidateDistribution)
-
-        const num = candidateDnRegistrar.num()
-        candidateDnCommander.setNumberCandidateDns(num)
-    }
-
-    self.addVoterPressed = () => {
-        const num = voterRegistrar.num() + 1
-        voterCommander.setNumberVoters(num)
-    }
-    self.setNumberVotersAction = (num) => {
-        while (voterRegistrar.num() < num) {
-            self.addVoterCircle(50, 50, 100, false)
-        }
-    }
-
-    self.addVoterCircle = (x, y, r, doLoad) => {
-        // eslint-disable-next-line max-len
-        const voterCircle = new VoterCircle(x, y, r, screen, voterRegistrar, commander, changes, doLoad, voterCommander)
-
-        sims.one.addSimVoterCircle(voterCircle)
-        sims.geoOne.addSimVoterCircle(voterCircle)
-        sims.sample.addSimVoterCircle(voterCircle)
-
-        const num = voterRegistrar.num()
-        voterCommander.setNumberVoters(num)
-    }
-
-    self.addCandidate(50, 100, '#e52', true)
-    self.addCandidate(100, 50, '#5e2', true)
-    self.addCandidate(300 - 100, 300 - 50, '#25e', true)
-    self.addCandidateDistribution(150, 150, 100, true)
-    self.addVoterCircle(50, 150, 100, true)
-    self.addVoterCircle(250, 150, 100, true)
+    self.simAddCandidates.addCandidate(50, 100, 50, '#e52', true)
+    self.simAddCandidates.addCandidate(100, 50, 100, '#5e2', true)
+    self.simAddCandidates.addCandidate(300 - 100, 300 - 50, 200, '#25e', true)
+    self.simAddCandidateDns.addCandidateDistribution(150, 150, 150, 200, true)
+    self.simAddVoters.addVoterCircle(50, 150, 50, 200, 200, 'gaussian', true)
+    self.simAddVoters.addVoterCircle(250, 150, 250, 200, 200, 'gaussian', true)
 
     // State Machine //
 
@@ -167,12 +88,17 @@ export default function Sim(
     self.renderForeground = () => { sims[self.state].renderForeground() }
     self.render = () => { sims[self.state].render() }
 
+    // Buttons //
+
+    addSimControlsLabel(layout)
+
     // -- Menu -- //
 
     // add a menu item to switch between types of sims
     // a list of simulation types
     self.typeList = [
         { name: 'One Election', value: 'one', state: '' },
+        { name: '1D One Election', value: 'oneDOne', state: '' },
         { name: 'Sample Elections', value: 'sample', state: '' },
         { name: 'Geo Election', value: 'geoOne', state: '' },
     ]

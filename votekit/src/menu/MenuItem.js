@@ -25,13 +25,17 @@ export default function MenuItem(object, prop, setProp, label, options, change, 
     const self = this
     self.list = options
     self.onChoose = function (data) {
-        commander.do({ name: prop, value: data.value })
+        self.sender.go(data.value)
     }
     self.action = (value) => {
         self.set(value)
         self.select()
     }
-    commander.addAction(prop, self.action, object[prop])
+    self.sender = commander.addSender({
+        name: prop,
+        action: self.action,
+        currentValue: object[prop],
+    })
     self.set = function (value) {
         // LOAD INPUT
 
@@ -43,7 +47,7 @@ export default function MenuItem(object, prop, setProp, label, options, change, 
     }
     self.choose = new ButtonGroup({
         label,
-        width: bw(2),
+        width: buttonWidth(3),
         data: self.list,
         onChoose: self.onChoose,
     })
@@ -54,4 +58,14 @@ export default function MenuItem(object, prop, setProp, label, options, change, 
     }
 }
 
-function bw(x) { return (220 - 4 * (x - 1)) / x - 2 }
+function buttonWidth(numButtons) {
+    const padding = 4
+    const border = 1
+    const margin = 4
+    const between = (padding + border + margin) * 2
+    const end = padding + border
+    const width = 302
+    const usableSpace = width - between * (numButtons - 1) - 2 * end
+    const buttonWidth1 = usableSpace / numButtons
+    return buttonWidth1
+}

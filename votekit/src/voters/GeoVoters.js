@@ -65,8 +65,9 @@ export default function GeoVoters(screen, geoElection) {
                 (rowNoise) => rowNoise.map(
                     (cellNoise) => {
                         const [xNoise, yNoise] = cellNoise
-                        const { x, y, r } = vb.voter
-                        return { x: x + xNoise, y: y + yNoise, r }
+                        const { w2, densityProfile1 } = vb.voter
+                        const { x, y } = vb.voter.p2
+                        return { p2: { x: x + xNoise, y: y + yNoise }, w2, densityProfile1 }
                     },
                 ).flat(),
             ).flat(),
@@ -81,9 +82,10 @@ export default function GeoVoters(screen, geoElection) {
                 (vb) => census[iDistrict].map((g) => {
                     const [gx, gy, gf] = g
                     const [xNoise, yNoise] = sn[gx][gy]
-                    const { x, y, r } = vb.voter
+                    const { w2, densityProfile1 } = vb.voter
+                    const { x, y } = vb.voter.p2
                     return {
-                        x: x + xNoise, y: y + yNoise, r, f: gf,
+                        p2: { x: x + xNoise, y: y + yNoise }, w2, densityProfile1, weight: gf,
                     }
                 }).flat(),
             ).flat(),
@@ -97,8 +99,9 @@ export default function GeoVoters(screen, geoElection) {
                 (cellNoise) => simVoterGroups.map(
                     (vb) => {
                         const [xNoise, yNoise] = cellNoise
-                        const { x, y, r } = vb.voter
-                        return { x: x + xNoise, y: y + yNoise, r }
+                        const { w2, densityProfile1 } = vb.voter
+                        const { x, y } = vb.voter.p2
+                        return { p2: { x: x + xNoise, y: y + yNoise }, w2, densityProfile1 }
                     },
                 ).flat(),
             ),
@@ -142,7 +145,7 @@ export default function GeoVoters(screen, geoElection) {
         self.voterGroupsByTract.forEach((row) => {
             row.forEach((cell) => {
                 cell.forEach((group) => {
-                    smallCircle(group.x, group.y)
+                    smallCircle(group.p2.x, group.p2.y)
                 })
             })
         })

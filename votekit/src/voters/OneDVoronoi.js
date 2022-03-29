@@ -11,12 +11,13 @@ import { Delaunay } from '../../lib/d3-delaunay.esm.js'
 
 /**
  * Draw Voronoi cells to show votes.
+ * OneDVoronoi is a component of OneDVoterBlock.
  * @param {VoterGroup} voterGroup
  * @param {Election} election
  * @param {Screen} screen
  * @constructor
  */
-export default function voronoiGroup(voterGroup, screen) {
+export default function OneDVoronoi(voterGroup, screen) {
     const self = this
 
     let cans
@@ -31,15 +32,18 @@ export default function voronoiGroup(voterGroup, screen) {
 
     self.render = function () {
         const { ctx } = screen
+        const { x, w1, densityProfile1 } = voterGroup
+        const h = 100
 
         ctx.save()
 
-        // draw circle clip
+        // clip the voronoi diagram
 
         // http://jsfiddle.net/jimrhoskins/dDUC3/1/
         // https://dustinpfister.github.io/2019/10/08/canvas-clip/
+
         ctx.beginPath()
-        ctx.arc(voterGroup.x, voterGroup.y, voterGroup.w2 * 0.5, 0, 2 * Math.PI)
+        doPath()
         // ctx.closePath()
         ctx.clip()
 
@@ -53,9 +57,38 @@ export default function voronoiGroup(voterGroup, screen) {
         }
 
         ctx.beginPath()
-        ctx.arc(voterGroup.x, voterGroup.y, voterGroup.w2 * 0.5, 0, 2 * Math.PI)
+        doPath()
         ctx.stroke()
 
         ctx.restore()
+
+        function doPath() {
+            if (densityProfile1 === 'gaussian') {
+                gaussianPath()
+            } else {
+                rectanglePath()
+            }
+        }
+        function gaussianPath() {
+            const sigma = w1 / Math.sqrt(2 * Math.PI) // w = sigma * sqrt(2*pi)
+            const amp = h
+            const bottom = 150 + h * 0.5
+            // start bottom left
+            ctx.moveTo(0, bottom)
+            const pa = []
+            for (let i = 0; i <= screen.width; i += 1) {
+                const xp = 0.5 * ((i - x) / sigma) ** 2
+                const y = bottom - amp * Math.exp(-xp)
+                pa.push(y)
+                ctx.lineTo(i, y)
+            }
+            // end bottom right
+            ctx.lineTo(screen.width, bottom)
+            ctx.lineTo(0, bottom)
+            // ctx.closePath()
+        }
+        function rectanglePath() {
+            ctx.rect(x - w1 * 0.5, 150 - h * 0.5, w1, h)
+        }
     }
 }
