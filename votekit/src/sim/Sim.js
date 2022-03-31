@@ -60,9 +60,9 @@ export default function Sim(
 
     // Default Entities //
 
-    self.simAddCandidates.addCandidate(50, 100, 50, '#e52', true)
-    self.simAddCandidates.addCandidate(100, 50, 100, '#5e2', true)
-    self.simAddCandidates.addCandidate(300 - 100, 300 - 50, 200, '#25e', true)
+    self.simAddCandidates.addCandidate(50, 100, 50, '#e05020', true)
+    self.simAddCandidates.addCandidate(100, 50, 100, '#50e020', true)
+    self.simAddCandidates.addCandidate(300 - 100, 300 - 50, 200, '#2050e0', true)
     self.simAddCandidateDns.addCandidateDistribution(150, 150, 150, 200, true)
     self.simAddVoters.addVoterCircle(50, 150, 50, 200, 200, 'gaussian', true)
     self.simAddVoters.addVoterCircle(250, 150, 250, 200, 200, 'gaussian', true)
@@ -87,6 +87,11 @@ export default function Sim(
     }
     self.renderForeground = () => { sims[self.state].renderForeground() }
     self.render = () => { sims[self.state].render() }
+
+    self.setShowNonExistingEntities = (a) => {
+        self.showGhosts = a
+        changes.add(['showGhosts'])
+    }
 
     // Buttons //
 

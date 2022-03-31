@@ -8,7 +8,7 @@
  * @param {Changes} changes
  * @constructor
  */
-export default function DraggableManager(screen, changes) {
+export default function DraggableManager(screen, changes, sim) {
     const self = this
 
     // private variables
@@ -39,11 +39,7 @@ export default function DraggableManager(screen, changes) {
         const nd = draggables.length
         for (let i = 0; i < nd; i++) {
             const d = draggables[i]
-            if (d.o.exists && hitTest(d, mouse, extra)) {
-                if (event.isTouch) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                }
+            if ((d.o.exists || sim.showGhosts) && hitTest(d, mouse, extra)) {
                 drag.iDragging = i
                 drag.isDragging = true
                 drag.offX = d.o.x - mouse.x
@@ -53,9 +49,13 @@ export default function DraggableManager(screen, changes) {
                 break // exit after picking one object
             }
         }
+        startClickDetect(mouse)
     }
 
-    const end = function () {
+    const end = function (e) {
+        // eslint-disable-next-line no-use-before-define
+        move(e)
+        endClickDetect()
         if (drag.iDragging !== undefined) {
             const dragging = draggables[drag.iDragging]
             dragging.g.drop()
@@ -81,13 +81,14 @@ export default function DraggableManager(screen, changes) {
             const nd = draggables.length
             for (let i = 0; i < nd; i++) {
                 const d = draggables[i]
-                if (d.o.exists && hitTest(d, mouse, 0)) {
+                if ((sim.showGhosts || d.o.exists) && hitTest(d, mouse, 0)) {
                     canvas.dataset.cursor = 'grab'
                     return
                 }
             }
             canvas.dataset.cursor = '' // nothing to grab
         }
+        moveClickDetect(mouse)
     }
 
     // Touch Listeners
@@ -149,5 +150,31 @@ export default function DraggableManager(screen, changes) {
             return hit
         }
         return false
+    }
+
+    // click detection //
+
+    let couldBeClick
+    let startPos
+    function startClickDetect(mouse) {
+        couldBeClick = true
+        startPos = structuredClone(mouse)
+    }
+    function moveClickDetect(mouse) {
+        if (couldBeClick) {
+            const xDist = Math.abs(startPos.x - mouse.x)
+            const yDist = Math.abs(startPos.y - mouse.y)
+            if (xDist > 5) couldBeClick = false
+            if (yDist > 5) couldBeClick = false
+        }
+    }
+    function endClickDetect() {
+        if (couldBeClick) {
+            couldBeClick = false
+            if (drag.isDragging) { // because the mouse is moving
+                const dragging = draggables[drag.iDragging]
+                dragging.o.click()
+            }
+        }
     }
 }

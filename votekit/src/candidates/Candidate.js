@@ -2,6 +2,7 @@
 
 import SquareGraphic from './SquareGraphic.js'
 import { drawStrokedColor, textPercent } from '../utilities/graphicsUtilities.js'
+import tooltipForEntity from '../sim/tooltipForEntity.js'
 
 /**
  * Candidate class on top of handle.
@@ -49,6 +50,7 @@ export default function Candidate(
             candidateCommander.setESenderForList.command(id, 1, 0), // set alive flag
             candidateCommander.setP2SenderForList.command(id, p2, p2),
             candidateCommander.setP1SenderForList.command(id, p1, p1),
+            candidateCommander.setColorSenderForList.command(id, color, color), // set alive flag
         ]
         // Either load the commands because we don't want to create an item of history
         // Or do the commands because want to store an item in history, so that we can undo.
@@ -102,10 +104,26 @@ export default function Candidate(
         }
     }
 
+    self.setColorAction = (newColor) => {
+        self.color = newColor
+        changes.add(['color'])
+    }
+    self.setColor = (e) => {
+        const cur = candidateCommander.setColorSenderForList.getCurrentValue(id)
+        candidateCommander.setColorSenderForList.go(id, e, cur)
+    }
+
     self.instantiate()
 
-    // square is for rendering
-    const square = new SquareGraphic(self, wHandle, hHandle, color, screen)
+    // Click Handler
+
+    self.click = () => {
+        tooltipForEntity(self, screen, sim)
+    }
+
+    // Rendering
+
+    const square = new SquareGraphic(self, wHandle, hHandle, screen)
     self.square = square
 
     self.fraction = 0
@@ -120,10 +138,13 @@ export default function Candidate(
     self.renderForeground = function () {
         square.render()
 
-        drawStrokedColor(textPercent(self.fraction), self.x, self.y - square.h * 0.5 - 2, 20, 2, '#222', screen.fctx)
+        // show minimal graphics when rendering as a ghost.
+        if (self.exists === 0) return
+
+        drawStrokedColor(textPercent(self.fraction), self.x, self.y - square.h * 0.5 - 2, 20, 2, '#222', 1, screen.fctx)
 
         if (self.wins !== undefined) {
-            drawStrokedColor(self.wins, self.x, self.y + square.h * 0.5 + 20 + 2, 20, 2, '#222', screen.fctx)
+            drawStrokedColor(self.wins, self.x, self.y + square.h * 0.5 + 20 + 2, 20, 2, '#222', 1, screen.fctx)
         }
     }
 }

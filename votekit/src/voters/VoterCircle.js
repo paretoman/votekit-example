@@ -1,6 +1,7 @@
 /** @module */
 
 import CircleGraphic from './CircleGraphic.js'
+import tooltipForEntity from '../sim/tooltipForEntity.js'
 
 /**
  * VoterCircle class with Handle component to take care of dragging.
@@ -138,10 +139,16 @@ export default function VoterCircle(
 
     // Done instantiating variables
 
+    // Click Handler
+
+    self.click = () => {
+        tooltipForEntity(self, screen, sim)
+    }
+
+    // Rendering
+
     const circle = new CircleGraphic(self, 13, '#999', screen)
     self.circle = circle
-
-    // Drawing
 
     self.renderForeground = () => {
         // handle
