@@ -19,7 +19,19 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Paretoman"},"description":"Here’s a demo site that uses votekit. Votekit is an explorable sandbox that shows how different voting methods work. Single elections are presented visually using a spatial opinion model. Ensembles of elections are also presented with distributions of winning positions. (The rest of this description will become more accurate with time.) Some consideration of strategy is performed. Voting methods include single-winner systems like plurality, approval, condorcet methods, instant runoff, score, star, etc. Electoral methods also include proportional multi-member district methods like the Single Transferable Vote, Monroe, Thiele’s Proportional Approval Voting, Phragmen’s method, etc. Electoral methods also include party-list proportional methods like d’Hondt, Huntington-Hill, Webster, etc. Additional electoral methods include MMP and OLPR.","headline":"VoteKit Demo","url":"https://paretoman.github.io/votekit-example/s/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/votekit-example/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://paretoman.github.io/votekit-example/feed.xml" title="VoteKit Demo" /><link href="../votekit/src/ui/sandbox.css" rel="stylesheet">
+<link rel="stylesheet" href="/votekit-example/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://paretoman.github.io/votekit-example/feed.xml" title="VoteKit Demo" /><script>
+if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1")) {
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-172540609-1', 'auto');
+  ga('send', 'pageview');
+}
+</script>
+  
+<link href="../votekit/src/ui/sandbox.css" rel="stylesheet">
   <link href="../votekit/src/menu/button.css" rel="stylesheet">
   <link href="../css/nav.css" rel="stylesheet">
   <script type="module" src="../lib/votekit/dist/addSandboxes.js"></script>
