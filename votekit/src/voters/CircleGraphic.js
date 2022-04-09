@@ -1,6 +1,6 @@
 /** @module */
 
-import { Tween } from '../../lib/tween.esm.js'
+import { Tween } from '../lib/snowpack/build/snowpack/pkg/@tweenjs/tweenjs.js'
 
 /**
  */
