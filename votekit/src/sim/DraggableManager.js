@@ -1,6 +1,6 @@
 /** @module */
 
-import { minIndex } from '../utilities/jsHelpers.js'
+import { clamp, minIndex } from '../utilities/jsHelpers.js'
 
 /**
  * Draggable Manager gives draggable behavior to objects on a canvas.
@@ -17,7 +17,7 @@ export default function DraggableManager(screen, changes, sim) {
     let drag = {}
     const draggables = []
 
-    const canvas = screen.foreground
+    const grabCanvas = screen.tooltips
 
     // add draggable objects
     self.newSquareHandle = function (o, g) {
@@ -34,9 +34,12 @@ export default function DraggableManager(screen, changes, sim) {
     // As a sidenote, it is interesting that we don't need to call model.update here
     // because we are using a game loop that will call model.update.
     const start = function (event) {
-        const mouse = {}
-        mouse.x = event.offsetX
-        mouse.y = event.offsetY
+        // don't interact with stuff underneath a tooltip
+        if (event.target.closest('.tooltipBox') !== null) {
+            return
+        }
+
+        const mouse = getMouse(event)
         const extra = (event.isTouch) ? 10 : 0
         const nd = draggables.length
         // We are in the hitboxes of these draggables.
@@ -64,22 +67,26 @@ export default function DraggableManager(screen, changes, sim) {
             drag.offX = d.o.x - mouse.x
             drag.offY = d.o.y - mouse.y
             d.g.pickUp()
-            canvas.dataset.cursor = 'grabbing' // CSS data attribute
+            grabCanvas.dataset.cursor = 'grabbing' // CSS data attribute
         }
         startClickDetect(mouse)
     }
 
     const move = function (event) {
-        const mouse = {}
-        mouse.x = event.offsetX
-        mouse.y = event.offsetY
+        const mouse = getMouse(event)
         if (drag.isDragging) { // because the mouse is moving
             if (event.isTouch) {
                 event.preventDefault()
                 event.stopPropagation()
             }
             const dragging = draggables[drag.iDragging]
-            dragging.o.setXY({ x: mouse.x + drag.offX, y: mouse.y + drag.offY })
+
+            const w = screen.width
+            const h = screen.height
+            dragging.o.setXY({
+                x: clamp(mouse.x + drag.offX, 0, w),
+                y: clamp(mouse.y + drag.offY, 0, h),
+            })
             changes.add(['draggables'])
         } else {
             // see if we're hovering over something grabbable
@@ -88,17 +95,16 @@ export default function DraggableManager(screen, changes, sim) {
             for (let i = 0; i < nd; i++) {
                 const d = draggables[i]
                 if ((sim.showGhosts || d.o.exists) && hitTest(d, mouse, 0)) {
-                    canvas.dataset.cursor = 'grab'
+                    grabCanvas.dataset.cursor = 'grab'
                     return
                 }
             }
-            canvas.dataset.cursor = '' // nothing to grab
+            grabCanvas.dataset.cursor = '' // nothing to grab
         }
         moveClickDetect(mouse)
     }
 
-    const end = function (e) {
-        move(e)
+    const end = function () {
         endClickDetect()
         if (drag.iDragging !== undefined) {
             const dragging = draggables[drag.iDragging]
@@ -118,7 +124,9 @@ export default function DraggableManager(screen, changes, sim) {
     }
     const touchend = (e) => {
         const pass = passTouch(e)
+        move(pass)
         end(pass)
+        e.preventDefault() // prevent mousedown from firing
     }
 
     self.eventHandlers = {
@@ -131,18 +139,20 @@ export default function DraggableManager(screen, changes, sim) {
      * @returns {Event} - The same event it received, plus some added properties.
      */
     function passTouch(e) {
-        const rect = e.target.getBoundingClientRect()
-        const w = e.target.clientWidth
-        const h = e.target.clientHeight
-        let x = e.changedTouches[0].clientX - rect.left
-        let y = e.changedTouches[0].clientY - rect.top
-        if (x < 0) x = 0
-        if (y < 0) y = 0
-        if (x > w) x = w
-        if (y > h) y = h
-        const pass = { offsetX: x, offsetY: y, isTouch: true }
-        Object.assign(e, pass)
+        e.isTouch = true
         return e
+    }
+
+    /** Fix position relative to parent
+     *  https://stackoverflow.com/questions/2614461/javascript-get-mouse-position-relative-to-parent-element
+     */
+    function getMouse(e) {
+        const rect = screen.canvas.getBoundingClientRect()
+        const c = (e.isTouch) ? e.changedTouches[0] : e
+        const x = c.clientX - rect.left
+        const y = c.clientY - rect.top
+        const mouse = { x, y }
+        return mouse
     }
 
     /**
@@ -190,7 +200,18 @@ export default function DraggableManager(screen, changes, sim) {
             if (drag.isDragging) { // because the mouse is moving
                 const dragging = draggables[drag.iDragging]
                 dragging.o.click()
+            } else {
+                // We are not dragging anything, and we clicked,
+                // and we're inside the screen because this could be a click,
+                // so let's do the click action for blank space.
+                clickEmpty(startPos)
             }
         }
+    }
+
+    // Test Point
+
+    function clickEmpty(p) {
+        sim.voterTest.start(p)
     }
 }

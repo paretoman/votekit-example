@@ -32,17 +32,23 @@ export default function Screen(w, h, layout) {
     self.foreground.setAttribute('class', 'foreground')
     self.fctx = self.foreground.getContext('2d')
 
-    // geoMaps
-    self.geoMaps = document.createElement('canvas')
-    self.geoMaps.setAttribute('class', 'geoMaps')
-    self.gctx = self.geoMaps.getContext('2d')
+    // maps
+    self.maps = document.createElement('canvas')
+    self.maps.setAttribute('class', 'maps')
+    self.mctx = self.maps.getContext('2d')
 
     const clearDiv = document.createElement('div')
-    layout.newElement('clearDiv', clearDiv)
-    layout.newElement('screen', self.canvas)
-    layout.newElement('tooltips', self.tooltips)
-    layout.newElement('foreground', self.foreground)
-    layout.newElement('geoMaps', self.geoMaps)
+
+    // wrap
+    self.wrap = document.createElement('div')
+    self.wrap.setAttribute('class', 'screenWrap')
+    self.wrap.appendChild(clearDiv)
+    self.wrap.appendChild(self.canvas)
+    self.wrap.appendChild(self.tooltips)
+    self.wrap.appendChild(self.foreground)
+
+    layout.newElement('screenWrap', self.wrap)
+    layout.newElement('maps', self.maps)
 
     self.noBuffers = false
 
@@ -56,8 +62,11 @@ export default function Screen(w, h, layout) {
     self.canvas.style.width = `${w}px`
     self.canvas.style.height = `${h}px`
 
+    self.wrap.style.width = `${w}px`
+    self.wrap.style.height = `${h}px`
+
     self.tooltips.style.width = `${w}px`
-    self.tooltips.style.height = '0px'
+    self.tooltips.style.height = `${h}px`
 
     self.foreground.width = w * self.pixelRatio // measured in device pixels
     self.foreground.height = h * self.pixelRatio
@@ -65,22 +74,28 @@ export default function Screen(w, h, layout) {
     self.foreground.style.width = `${w}px`
     self.foreground.style.height = `${h}px`
 
-    const h3 = Math.round(h / 3)
-    self.geoMaps.width = w * self.pixelRatio // measured in device pixels
-    self.geoMaps.height = h3 * self.pixelRatio
-
-    self.geoMaps.style.width = `${w}px`
-    self.geoMaps.style.height = `${h3}px`
+    self.setMapsHeight = (height) => {
+        const h3 = Math.round(height)
+        self.maps.heightBrowser = h3
+        self.maps.height = h3 * self.pixelRatio // measured in device pixels
+        self.maps.style.height = `${h3}px` // measured in browser pixels
+        self.mctx.scale(self.pixelRatio, self.pixelRatio)
+    }
+    self.setMapsHeight((1 / 3) * h)
+    self.maps.width = w * self.pixelRatio // measured in device pixels
+    self.maps.style.width = `${w}px`
 
     self.ctx.scale(self.pixelRatio, self.pixelRatio)
     self.fctx.scale(self.pixelRatio, self.pixelRatio)
-    self.gctx.scale(self.pixelRatio, self.pixelRatio)
 
     self.clear = function () {
         self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height)
     }
     self.clearForeground = function () {
-        self.fctx.clearRect(0, 0, self.canvas.width, self.canvas.height)
+        self.fctx.clearRect(0, 0, self.foreground.width, self.foreground.height)
+    }
+    self.clearMaps = function () {
+        self.mctx.clearRect(0, 0, self.maps.width, self.maps.height)
     }
     self.setCtx = function (c) {
         self.ctx = c
@@ -88,34 +103,34 @@ export default function Screen(w, h, layout) {
     self.setFCtx = function (c) {
         self.fctx = c
     }
-    self.setGCtx = function (c) {
-        self.gctx = c
+    self.setMCtx = function (c) {
+        self.mctx = c
     }
     self.setNoBuffers = function (noBuffers) {
         self.noBuffers = noBuffers
     }
-    self.showGeoMaps = () => {
-        self.geoMaps.style.display = 'block'
+    self.showMaps = () => {
+        self.maps.style.display = 'block'
     }
-    self.hideGeoMaps = () => {
-        self.geoMaps.style.display = 'none'
+    self.hideMaps = () => {
+        self.maps.style.display = 'none'
     }
 
     self.eventHandlers = new EventHandlers()
     const { handlers } = self.eventHandlers
 
-    self.foreground.onmousedown = (e) => handlers.start(e)
-    self.foreground.onmousemove = (e) => handlers.move(e)
-    self.foreground.onmouseup = (e) => handlers.end(e)
-    self.foreground.addEventListener('touchmove', (e) => handlers.touchmove(e))
-    self.foreground.addEventListener('touchstart', (e) => handlers.touchstart(e))
-    self.foreground.addEventListener('touchend', (e) => handlers.touchend(e))
+    self.wrap.onmousedown = (e) => handlers.start(e)
+    self.wrap.onmousemove = (e) => handlers.move(e)
+    self.wrap.onmouseup = (e) => handlers.end(e)
+    self.wrap.addEventListener('touchmove', (e) => handlers.touchmove(e))
+    self.wrap.addEventListener('touchstart', (e) => handlers.touchstart(e))
+    self.wrap.addEventListener('touchend', (e) => handlers.touchend(e))
 
     // mouse up outside of canvas
     const current = document.onmouseup
     document.onmouseup = (e) => {
         if (current) current(e)
-        self.foreground.onmouseup(e)
+        self.wrap.onmouseup(e)
     }
 }
 

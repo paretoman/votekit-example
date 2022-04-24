@@ -1,7 +1,7 @@
 /** @module */
 
 import castVotes from '../castVotes/castVotes.js'
-import ElectionMethod from './ElectionMethod.js'
+import CountVotes from './CountVotes.js'
 
 /**
  * Here we are in the context of a single election with voter objects and candidate objects.
@@ -11,7 +11,7 @@ import ElectionMethod from './ElectionMethod.js'
 export default function Election(menu) {
     const self = this
 
-    self.method = new ElectionMethod(menu)
+    self.countVotes = new CountVotes(menu)
     self.dimensions = 1
 
     self.setDimensions = (d) => { self.dimensions = d }
@@ -19,44 +19,51 @@ export default function Election(menu) {
     // Dimensions //
 
     /** Get the correct geometry, depending on dimension. */
-    const mapVoters = (voterGroups) => {
+    const mapVoters = (voterShapes) => {
         if (self.dimensions === 1) {
-            return voterGroups.map((vg) => ({
-                x: vg.p1, w: vg.w1, densityProfile1: vg.densityProfile1,
-            }))
+            return voterShapes.map((vg) => (vg.shape1))
         }
-        return voterGroups.map((vg) => ({
-            x: vg.p2.x, y: vg.p2.y, w: vg.w2, densityProfile1: vg.densityProfile1,
-        }))
+        return voterShapes.map((vg) => (vg.shape2))
     }
 
     /** Get the correct geometry, depending on dimension. */
     const mapCans = (canList) => {
         if (self.dimensions === 1) {
-            return canList.map((can) => (can.p1))
+            return canList.map((can) => (can.shape1))
         }
-        return canList.map((can) => (can.p2))
+        return canList.map((can) => (can.shape2))
     }
 
     // Election //
 
-    self.runElection = function (voterGroups, canList) {
-        const voterGeom = mapVoters(voterGroups)
+    self.runElection = function (voterShapes, canList, optionCast) {
+        const voterGeom = mapVoters(voterShapes)
         const canGeom = mapCans(canList)
-        const votes = castVotes.pluralityBallot(canGeom, voterGeom, self.dimensions)
-        const methodResults = self.method.run(canList, votes)
-        const electionResults = { ...methodResults, votes }
+        const casterFun = castVotes[self.countVotes.caster]
+        const votes = casterFun(canGeom, voterGeom, self.dimensions, optionCast)
+        const electionResults = self.countVotes.run(canList, votes)
         return electionResults
     }
 
     // Voters cast votes for candidates.
-    // There is also a separate graphical representation in VoronoiGroup.js
-    self.castVotes = (voters, candidates) => {
-        const voterGroups = voters.getVoterGroups()
+    // There is also a separate graphical representation in Voronoi2D.js
+    self.castVotes = (voters, candidates, optionCast) => {
+        const voterShapes = voters.getVoterShapes()
         const canList = candidates.getCandidates()
-        const voterGeom = mapVoters(voterGroups)
+        const voterGeom = mapVoters(voterShapes)
         const canGeom = mapCans(canList)
-        const votes = castVotes.pluralityBallot(canGeom, voterGeom, self.dimensions)
+        const casterFun = castVotes[self.countVotes.caster]
+        const votes = casterFun(canGeom, voterGeom, self.dimensions, optionCast)
         return votes
+    }
+
+    self.testVote = (voterTest, candidates, optionCast) => {
+        const voterShapes = [voterTest]
+        const canList = candidates.getCandidates()
+        const voterGeom = mapVoters(voterShapes)
+        const canGeom = mapCans(canList)
+        const casterFun = castVotes[self.countVotes.caster]
+        const vote = casterFun(canGeom, voterGeom, self.dimensions, optionCast, true)
+        return vote
     }
 }

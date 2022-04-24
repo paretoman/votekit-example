@@ -1,4 +1,8 @@
-canvas.background, canvas.foreground, canvas.geoMaps, div.svgDiv, div.gSvgDiv {
+div.screenWrap {
+	position:relative;
+}
+
+div.screenWrap, canvas.maps, div.svgDiv, div.mSvgDiv {
     border: solid black 1px;
 	margin: 4px;
 }
@@ -9,19 +13,19 @@ canvas.background {
 }
 
 div.tooltips {
-	position:relative;
+	position:absolute;
 }
 
 canvas.foreground {
 	z-index:1;
 }
 
-canvas.foreground[data-cursor=grab]{
+div.tooltips[data-cursor=grab]{
 	cursor: -webkit-grab;
 	cursor: -moz-grab;
 	cursor: grab;
 }
-canvas.foreground[data-cursor=grabbing]{
+div.tooltips[data-cursor=grabbing]{
 	cursor: -webkit-grabbing;
 	cursor: -moz-grabbing;
 	cursor: grabbing;

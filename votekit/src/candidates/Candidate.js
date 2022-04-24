@@ -2,13 +2,13 @@
 
 import SquareGraphic from './SquareGraphic.js'
 import { drawStrokedColor, textPercent } from '../utilities/graphicsUtilities.js'
-import tooltipForEntity from '../sim/tooltipForEntity.js'
+import tooltipForEntity from '../tooltips/tooltipForEntity.js'
 
 /**
  * Candidate class on top of handle.
  * Candidate adds candidate behavior on top of a draggable handle handle.
- * @param {Number} x
- * @param {Number} y
+ * @param {Object} shape2
+ * @param {Object} shape1
  * @param {Number} wHandle
  * @param {Number} hHandle
  * @param {String} color
@@ -16,12 +16,12 @@ import tooltipForEntity from '../sim/tooltipForEntity.js'
  * @param {Registrar} candidateRegistrar
  * @param {Commander} commander
  * @param {Changes} changes
- * @param {Boolean} doLoad - Should we add the candidateDistribution without adding to the history?
+ * @param {Boolean} doLoad - Should we add the candidateDn without adding to the history?
  * @constructor
  */
 export default function Candidate(
-    p2,
-    p1,
+    shape2,
+    shape1,
     wHandle,
     hHandle,
     color,
@@ -35,22 +35,22 @@ export default function Candidate(
 ) {
     const self = this
 
+    self.shape1 = {}
+    self.shape2 = {}
+
     const id = candidateRegistrar.new(self)
 
     // Instantiate Variables
 
     // use commands to instantiate variables
     self.instantiate = () => {
-        // set current value because we need to be able to undo by returning to these values
-        // candidateCommander.setESenderForList.setCurrentValue(id, 0)
-        // candidateCommander.setXYSenderForList.setCurrentValue(id, { x, y })
+        const shape2p = { x: shape2.x, y: shape2.y }
 
         const commands = [
-            // candidateCommander.setNumberCandidatesSender.command(id + 1),
-            candidateCommander.setESenderForList.command(id, 1, 0), // set alive flag
-            candidateCommander.setP2SenderForList.command(id, p2, p2),
-            candidateCommander.setP1SenderForList.command(id, p1, p1),
-            candidateCommander.setColorSenderForList.command(id, color, color), // set alive flag
+            candidateCommander.setForListSenders.exists.command(id, 1, 0), // set alive flag
+            candidateCommander.setForListSenders.shape2p.command(id, shape2p, shape2p),
+            candidateCommander.setForListSenders.shape1x.command(id, shape1.x, shape1.x),
+            candidateCommander.setForListSenders.color.command(id, color, color), // set alive flag
         ]
         // Either load the commands because we don't want to create an item of history
         // Or do the commands because want to store an item in history, so that we can undo.
@@ -60,25 +60,29 @@ export default function Candidate(
             commander.doCommands(commands)
         }
     }
-    self.setEAction = (e) => {
+
+    self.setAction = {}
+
+    self.setAction.exists = (e) => {
         self.exists = e
         changes.add(['draggables'])
     }
     self.setE = (e) => {
-        const cur = candidateCommander.setESenderForList.getCurrentValue(id)
-        candidateCommander.setESenderForList.go(id, e, cur)
+        const cur = candidateCommander.setForListSenders.exists.getCurrentValue(id)
+        candidateCommander.setForListSenders.exists.go(id, e, cur)
     }
 
-    self.setP2Action = (p) => {
-        self.p2 = structuredClone(p)
+    self.setAction.shape2p = (p) => {
+        self.shape2.x = p.x
+        self.shape2.y = p.y
         if (sim.election.dimensions === 2) {
             self.x = p.x
             self.y = p.y
         }
         changes.add(['draggables'])
     }
-    self.setP1Action = (p) => {
-        self.p1 = p
+    self.setAction.shape1x = (p) => {
+        self.shape1.x = p
         if (sim.election.dimensions === 1) {
             self.x = p
             self.y = 250
@@ -87,30 +91,30 @@ export default function Candidate(
     }
     self.setXY = (p) => {
         if (sim.election.dimensions === 1) {
-            const cur = candidateCommander.setP1SenderForList.getCurrentValue(id)
-            candidateCommander.setP1SenderForList.go(id, p.x, cur)
+            const cur = candidateCommander.setForListSenders.shape1x.getCurrentValue(id)
+            candidateCommander.setForListSenders.shape1x.go(id, p.x, cur)
         } else {
-            const cur = candidateCommander.setP2SenderForList.getCurrentValue(id)
-            candidateCommander.setP2SenderForList.go(id, p, cur)
+            const cur = candidateCommander.setForListSenders.shape2p.getCurrentValue(id)
+            candidateCommander.setForListSenders.shape2p.go(id, p, cur)
         }
     }
     /** Do this when entering a state because x and y change.
-     *  Maybe x and y should be in the SimCandidate instead... just speculating. */
+     *  Maybe x and y should be in the CandidateSim instead... just speculating. */
     self.updateXY = () => {
         if (sim.election.dimensions === 1) {
-            self.setP1Action(self.p1)
+            self.setAction.shape1x(self.shape1.x)
         } else {
-            self.setP2Action(self.p2)
+            self.setAction.shape2p({ x: self.shape2.x, y: self.shape2.y })
         }
     }
 
-    self.setColorAction = (newColor) => {
+    self.setAction.color = (newColor) => {
         self.color = newColor
         changes.add(['color'])
     }
     self.setColor = (e) => {
-        const cur = candidateCommander.setColorSenderForList.getCurrentValue(id)
-        candidateCommander.setColorSenderForList.go(id, e, cur)
+        const cur = candidateCommander.setForListSenders.color.getCurrentValue(id)
+        candidateCommander.setForListSenders.color.go(id, e, cur)
     }
 
     self.instantiate()

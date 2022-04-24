@@ -1,6 +1,6 @@
 /** @module */
 
-import C2S from '../lib/snowpack/build/snowpack/pkg/canvas2svg.js'
+import C2S from '../lib/snowpack/build/snowpack/pkg/@mithrandirii/canvas2svg.js'
 /**
  * add a button so that we can generate an SVG of what is being rendered
  * @param {Object} screen the screen where the drawing context is.
@@ -30,13 +30,13 @@ export default function addSVGOutput(screen, draw, layout) {
     downloadLink.style.margin = '4px'
     svgUIDiv.appendChild(downloadLink)
 
-    // svg download link for geoMaps
-    const gDownloadLink = document.createElement('a')
-    gDownloadLink.innerText = 'Download geoMap SVG'
-    gDownloadLink.download = 'vote_geoMap.svg'
-    gDownloadLink.hidden = true
-    gDownloadLink.style.margin = '4px'
-    svgUIDiv.appendChild(gDownloadLink)
+    // svg download link for maps
+    const mDownloadLink = document.createElement('a')
+    mDownloadLink.innerText = 'Download Map SVG'
+    mDownloadLink.download = 'vote_map.svg'
+    mDownloadLink.hidden = true
+    mDownloadLink.style.margin = '4px'
+    svgUIDiv.appendChild(mDownloadLink)
 
     // svg hide button
     const svgHideButton = document.createElement('button')
@@ -54,36 +54,53 @@ export default function addSVGOutput(screen, draw, layout) {
     svgDiv.hidden = true
     svgUIDiv.appendChild(svgDiv)
 
-    // hidden svg output div for geoMaps
-    const gSvgDiv = document.createElement('div')
-    gSvgDiv.setAttribute('class', 'gSvgDiv')
-    gSvgDiv.style.width = `${w}px`
-    gSvgDiv.style.height = `${Math.round(h / 3)}px`
-    gSvgDiv.hidden = true
-    svgUIDiv.appendChild(gSvgDiv)
+    // hidden svg output div for maps
+    const mSvgDiv = document.createElement('div')
+    mSvgDiv.setAttribute('class', 'mSvgDiv')
+    mSvgDiv.style.width = `${w}px`
+    mSvgDiv.style.height = `${Math.round(h / 3)}px`
+    mSvgDiv.hidden = true
+    svgUIDiv.appendChild(mSvgDiv)
 
     const svgCtx = new C2S(w, h)
-    const svgGCtx = new C2S(w, Math.round(h / 3))
+    const svgMCtx = new C2S(w, Math.round(h / 3))
+
+    function setHeightGCtx(height) {
+        mSvgDiv.style.height = `${Math.round(height)}px`
+        mSvgDiv.height = height
+        // eslint-disable-next-line no-underscore-dangle
+        svgMCtx.__root.setAttribute('height', height)
+    }
 
     function makeSVG() {
         // temporarily swap drawing context, render SVG,
         // then output SVG to div and to a download link
+
+        // set
         const old = screen.ctx
         const oldF = screen.fctx
         screen.setCtx(svgCtx)
         screen.setFCtx(svgCtx)
         screen.setNoBuffers(true)
+
+        const oldM = screen.mctx
+        screen.setMCtx(svgMCtx)
+
+        // update
+        const { heightBrowser } = screen.maps
+        setHeightGCtx(heightBrowser)
+
+        // draw
         draw()
         outputSVG()
+        outputMSVG()
+
+        // unset
         screen.setCtx(old)
         screen.setFCtx(oldF)
         screen.setNoBuffers(false)
 
-        const oldG = screen.gctx
-        screen.setGCtx(svgGCtx)
-        draw()
-        outputGSVG()
-        screen.setGCtx(oldG)
+        screen.setMCtx(oldM)
     }
 
     function outputSVG() {
@@ -96,13 +113,13 @@ export default function addSVGOutput(screen, draw, layout) {
         const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
         downloadLink.href = url
     }
-    function outputGSVG() {
-        const gSvg = svgGCtx.getSerializedSvg(true)
-        gSvgDiv.innerHTML = gSvg
-        gSvgDiv.hidden = false
-        gDownloadLink.hidden = false
-        const gUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(gSvg)}`
-        gDownloadLink.href = gUrl
+    function outputMSVG() {
+        const mSvg = svgMCtx.getSerializedSvg(true)
+        mSvgDiv.innerHTML = mSvg
+        mSvgDiv.hidden = false
+        mDownloadLink.hidden = false
+        const mUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(mSvg)}`
+        mDownloadLink.href = mUrl
     }
 
     function hideSVG() {
@@ -111,7 +128,7 @@ export default function addSVGOutput(screen, draw, layout) {
         svgDiv.hidden = true
         downloadLink.hidden = true
 
-        gSvgDiv.hidden = true
-        gDownloadLink.hidden = true
+        mSvgDiv.hidden = true
+        mDownloadLink.hidden = true
     }
 }

@@ -1,11 +1,12 @@
 /** @module */
 
-import pluralityBallot from './pluralityBallot.js'
+import castPlurality from './castPlurality.js'
+import castScore from './CastScore.js'
 
 /**
  * a collection of ways to cast votes
  */
 
-const castVotes = { pluralityBallot }
+const castVotes = { castPlurality, castScore }
 
 export default castVotes

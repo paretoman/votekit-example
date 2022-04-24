@@ -1,13 +1,18 @@
 /** @module */
 
-import SimOne from './states/SimOne.js'
+import SimOne2D from './states/SimOne2D.js'
 import SimSample from './states/SimSample.js'
 import SimGeoOne from './states/SimGeoOne.js'
-import SimAddVoters from './SimAddVoters.js'
-import SimAddCandidates from './SimAddCandidates.js'
-import SimAddCandidateDns from './SimAddCandidateDns.js'
+import VoterShapeAdd from '../voters/VoterShapeAdd.js'
+import CandidateAdd from '../candidates/CandidateAdd.js'
+import CandidateDnAdd from '../candidateDns/CandidateDnAdd.js'
 import addSimControlsLabel from './addSimControlsLabel.js'
-import SimOneDOne from './states/SimOneDOne.js'
+import SimOne1D from './states/SimOne1D.js'
+import VoterTest from '../voters/VoterTest.js'
+import ElectionOne from '../election/ElectionOne.js'
+import ElectionSample from '../election/ElectionSample.js'
+import ElectionGeo from '../election/ElectionGeo.js'
+import Election from '../election/Election.js'
 
 /**
  * Simulation is the main task we're trying to accomplish in this program.
@@ -18,9 +23,6 @@ import SimOneDOne from './states/SimOneDOne.js'
  * @param {Screen} screen
  * @param {Menu} menu
  * @param {Changes} changes
- * @param {OneElection} oneElection
- * @param {SampleElections} sampleElections
- * @param {GeoElection} geoElection
  * @param {Commander} commander
  *
  * @constructor
@@ -29,10 +31,6 @@ export default function Sim(
     screen,
     menu,
     changes,
-    election,
-    oneElection,
-    sampleElections,
-    geoElection,
     commander,
     layout,
 ) {
@@ -40,36 +38,45 @@ export default function Sim(
 
     // Components //
 
+    const election = new Election(menu)
+    const electionOne = new ElectionOne(election)
+    const electionSample = new ElectionSample(election)
+    const electionGeo = new ElectionGeo(election)
+
     self.election = election
 
     // States //
 
     const sims = {
-        one: new SimOne(screen, menu, changes, oneElection, self),
-        oneDOne: new SimOneDOne(screen, menu, changes, oneElection, self),
+        one2D: new SimOne2D(screen, menu, changes, electionOne, self),
+        one1D: new SimOne1D(screen, menu, changes, electionOne, self),
         // eslint-disable-next-line max-len
-        sample: new SimSample(screen, menu, changes, sampleElections, self),
-        geoOne: new SimGeoOne(screen, menu, changes, geoElection, self),
+        sample: new SimSample(screen, menu, changes, electionSample, self),
+        geoOne: new SimGeoOne(screen, menu, changes, electionGeo, self),
     }
+    self.sims = sims
 
     // Entities //
 
-    self.simAddVoters = new SimAddVoters(screen, layout, changes, commander, sims, self)
-    self.simAddCandidates = new SimAddCandidates(screen, layout, changes, commander, sims, self)
-    self.simAddCandidateDns = new SimAddCandidateDns(screen, layout, changes, commander, sims, self)
+    self.voterShapeAdd = new VoterShapeAdd(screen, layout, changes, commander, sims, self)
+    self.candidateAdd = new CandidateAdd(screen, layout, changes, commander, sims, self)
+    self.candidateDnAdd = new CandidateDnAdd(screen, layout, changes, commander, sims, self)
+
+    self.voterTest = new VoterTest(screen, sims, self)
+    self.testVote = () => sims[self.state].testVote()
 
     // Default Entities //
 
-    self.simAddCandidates.addCandidate(50, 100, 50, '#e05020', true)
-    self.simAddCandidates.addCandidate(100, 50, 100, '#50e020', true)
-    self.simAddCandidates.addCandidate(300 - 100, 300 - 50, 200, '#2050e0', true)
-    self.simAddCandidateDns.addCandidateDistribution(150, 150, 150, 200, true)
-    self.simAddVoters.addVoterCircle(50, 150, 50, 200, 200, 'gaussian', true)
-    self.simAddVoters.addVoterCircle(250, 150, 250, 200, 200, 'gaussian', true)
+    self.candidateAdd.addCandidate({ x: 50, y: 100 }, { x: 50 }, '#e05020', true)
+    self.candidateAdd.addCandidate({ x: 100, y: 50 }, { x: 100 }, '#50e020', true)
+    self.candidateAdd.addCandidate({ x: 300 - 100, y: 300 - 50 }, { x: 200 }, '#2050e0', true)
+    self.candidateDnAdd.addCandidateDistribution({ x: 150, y: 150, w: 200 }, { x: 150 }, true)
+    self.voterShapeAdd.addVoterCircle({ x: 50, y: 150, w: 200 }, { x: 50, w: 200, densityProfile: 'gaussian' }, true)
+    self.voterShapeAdd.addVoterCircle({ x: 250, y: 150, w: 200 }, { x: 250, w: 200, densityProfile: 'gaussian' }, true)
 
     // State Machine //
 
-    self.state = 'one' // default
+    self.state = 'one2D' // default
     // self.typeExit = self.state
     changes.add(['simType'])
 
@@ -102,8 +109,8 @@ export default function Sim(
     // add a menu item to switch between types of sims
     // a list of simulation types
     self.typeList = [
-        { name: 'One Election', value: 'one', state: '' },
-        { name: '1D One Election', value: 'oneDOne', state: '' },
+        { name: 'One Election', value: 'one2D', state: '' },
+        { name: '1D One Election', value: 'one1D', state: '' },
         { name: 'Sample Elections', value: 'sample', state: '' },
         { name: 'Geo Election', value: 'geoOne', state: '' },
     ]
