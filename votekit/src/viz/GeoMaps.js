@@ -1,5 +1,6 @@
 /** @module */
 
+import geoColors from './geoColors.js'
 import NoiseImage from './NoiseImage.js'
 
 /**
@@ -8,7 +9,7 @@ import NoiseImage from './NoiseImage.js'
  * @param {Screen} screen
  * @constructor
  */
-export default function VizGeo2D(voterGeoList, screen) {
+export default function GeoMaps(voterGeoList, candidateSimList, screen, sim) {
     const self = this
 
     // Code that handles making images of geographic noise.
@@ -17,7 +18,8 @@ export default function VizGeo2D(voterGeoList, screen) {
     // Update //
 
     self.update = (geoElectionResults) => {
-        const { colorByTract, colorOfVoteByDistrict, colorOfWinsByDistrict } = geoElectionResults
+        const gc = geoColors(geoElectionResults, candidateSimList, sim)
+        const { colorByTract, colorOfVoteByDistrict, colorOfWinsByDistrict } = gc
         self.colorOfVoteByDistrict = colorOfVoteByDistrict
         self.winnerColors = colorOfWinsByDistrict
         self.noiseImage.loadColors(colorByTract)
@@ -31,11 +33,10 @@ export default function VizGeo2D(voterGeoList, screen) {
     // screen.setMapsHeight((1 / 3) * screen.height)
     /** Render all maps and  */
     self.render = () => {
-        renderPolicyNoise()
+        self.renderPolicyNoise()
         self.renderTractVotes()
         self.renderDistrictWins()
         self.renderDistrictVotes()
-        self.renderVoterBasisSet()
     }
     // Render census tract votes.
     self.renderTractVotes = () => {
@@ -52,18 +53,23 @@ export default function VizGeo2D(voterGeoList, screen) {
         const { renderVoronoiColors } = voterGeoList.districtMaker
         renderVoronoiColors(100, 0, geoMapWidth, geoMapHeight, self.colorOfVoteByDistrict)
     }
-    self.renderVoterBasisSet = () => {
-        const voterSimGroups = voterGeoList.getVoterSims()
-        voterSimGroups.forEach((v) => v.render())
-    }
 
     /** Draw dots to represent the political diversity across census tracts. */
-    function renderPolicyNoise() {
+    self.renderPolicyNoise = () => {
         voterGeoList.voterGroupsByTract.forEach((row) => {
             row.forEach((cell) => {
-                cell.forEach((group) => {
-                    smallCircle(group.shape2.x, group.shape2.y)
-                    // TODO: use .x and .y instead of shape2
+                cell.forEach((voterGroup) => {
+                    if (sim.election.dimensions === 1) {
+                        const { x } = voterGroup.shape1
+                        const { y } = voterGroup.shape2
+                        const ym = (y % 100) + 0 // TODO: better visual
+                        // const y = Math.random() * 100
+                        smallCircle(x, ym)
+                    } else {
+                        const { x, y } = voterGroup.shape2
+                        smallCircle(x, y)
+                        // TODO: use .x and .y instead of shape2
+                    }
                 })
             })
         })

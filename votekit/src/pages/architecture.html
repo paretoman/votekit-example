@@ -86,6 +86,8 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
       <li>The Sim class manages voter entities and candidate entities.</li>
       <li>Entities are visual objects that can be controlled by the user. These include voters and candidates.</li>
       <li>Sim is a state machine with the following states: SimGeoOne, SimOne1D, SimOne2D, and SimSample. Each state is like a different game. Entities are shared between states. Wrappers use the entities as components to provide additional functionality to the states.</li>
+      <li>State Updates
+  The basic process is: Run an election. Get result. Visualize result. The election code handles any changes. The electionResults communicates how to visualize the election.</li>
     </ul>
   </li>
   <li>Voters
@@ -104,7 +106,6 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
       <li>VoterSim deals with dragging the VoterShape for a particular sim.
         <ul>
           <li>voterShape is a component of VoterSim.</li>
-          <li>VoterGeoBasis is a variation on VoterSim with more drawing functions. It could be replaced with code in VizGeo2D.</li>
         </ul>
       </li>
       <li>VoterSimList manages a list of VoterSim objects for each sim. It provides a count of the VoterShapes and renders the VoterShapes. It is important because the “exists” property of a VoterShape can be toggled, so we have to filter the list of voters
@@ -114,11 +115,34 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
       </li>
       <li>Viz* draws the voters because there is more context to draw them as a group than individually.
         <ul>
-          <li>VizGeo2D draws the voters are in tracts and districts.</li>
+          <li>VizOneVoronoi - for votes cast like plurality.</li>
+          <li>VizOneGrid - for votes cast like score.</li>
+          <li>VizGeo - for votes cast in districts.</li>
+          <li>All implement an abstract class of Viz, where there is an update and a render function.</li>
+        </ul>
+      </li>
+      <li>Viz* calls specialized drawing functions for each viz type:
+        <ul>
+          <li>GeoMaps draws the voters in tracts and districts.</li>
+          <li>Voronoi1D/2D draws voronoi diagrams.</li>
+          <li>Grid1D/2D draws grids of votes.</li>
+          <li>VoterRender1D/2D has methods to draw the voters outside of any other context.</li>
         </ul>
       </li>
       <li>VoterTest is a copy of VoterShape, mostly. VoterTest exists outside of these other classes. It doesn’t have command history and doesn’t interact with other voters. It’s just a test.</li>
       <li>CircleGraphic makes an animated circle.</li>
+      <li>Data types:
+        <ul>
+          <li>These are the standard ways of referring to voter objects that are not classes.</li>
+          <li>voterGroup: an object with a shape1, shape2, and weight (optional) property.</li>
+          <li>voterGeom:
+            <ul>
+              <li>For 2D, an array of objects: {x,y,w}.</li>
+              <li>For 1D, an array of objects: {x,w,densityProfile}.</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li>Candidates
@@ -130,9 +154,22 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
           <li>CandidateCommander is the component that handles commands for each Candidate.</li>
         </ul>
       </li>
-      <li>CandidateSim deals with draggin the Candidate for a particular sim.</li>
+      <li>CandidateSim deals with dragging the Candidate for a particular sim.</li>
       <li>CandidateSimList manages a list of CandidateSim objects and tracks whether candidates exist and provides functions to return an array of Candidate objects. It also handles methods that apply to all the members of the list so you don’t have to loop through the Candidate objects on your own.</li>
       <li>SquareGraphic makes an animated square and shows stats.</li>
+      <li>Data types:
+        <ul>
+          <li>I made a standard way of referring to candidates as objects that are not classes.</li>
+          <li>canGeoms:
+            <ul>
+              <li>For 2D, an array of objects: {x,y}.</li>
+              <li>For 1D, an array of objects: {x}.</li>
+            </ul>
+          </li>
+          <li>canList: An array of Candidate objects.</li>
+          <li>candidateSimList: a CandidateSimList object.</li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li>CandidateDns
@@ -192,7 +229,7 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
   </li>
   <li>Test
     <ul>
-      <li>A barebones unit test for now. Should do more.</li>
+      <li>A bare bones unit test for now. Should do more.</li>
     </ul>
   </li>
   <li>Viz

@@ -55,8 +55,8 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
 <h2 id="new-classes">New Classes</h2>
 <ul>
   <li>SimOne1D is a subclass of SimBase.</li>
-  <li>VizOne1D is very similar to VizOne2D.</li>
-  <li>Voronoi1D is called by VizOne1D.</li>
+  <li>There were two VizOne classes, one for each number of dimensions, but they were very similar and could be combined into VizOne. They were called VizOne1D and VizOne2D.</li>
+  <li>Voronoi1D is called by VizOne.</li>
 </ul>
 
 <h2 id="maybe-new-in-future">Maybe new in future.</h2>
@@ -69,7 +69,7 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
 <p>Forgot to name gf from geoCensus as weight in castPlurality. So now the overlap between census tracts and districts is considered and results are more accurate.</p>
 
 <h2 id="set-xy">Set XY</h2>
-<p>So basically, our commands are only to set p1 and p2. While doing that, we also set x and y. When the user drags an entity, the xy position is sent to the entity, but the xy position is translated into a command that is appropriate for the current dimension.</p>
+<p>So basically, our commands are only to set p1 and p2. While doing that, we also set x and y. When the user drags an entity, the xy position is sent to the entity, but the xy position is translated into a command that is appropriate for the current number of dimensions.</p>
 
 <h2 id="update-xy">Update XY</h2>
 <p>When the dimensions change, we have to call updateXY to set x and y through the p1 or p2 action. To be clear, this is the action, not the command because we don’t need to change the config.</p>
@@ -78,7 +78,7 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
 <p>Just draw midpoints between candidates to define the voronoi cell for each candidate. Then overlay the voter shape on that and find the intersection for each candidate.</p>
 
 <h2 id="ballot-dimension">Ballot Dimension</h2>
-<p>When casting a ballot, we need to know which coordinates to use for the candidates and voters. The summer will be chosen based on the number of dimensions. Only the relevant geometries will be passed to the ballot caster (member of castVotes).</p>
+<p>When casting a ballot, we need to know which coordinates to use for the candidates and voters. The summer will be chosen based on the number of dimensions. Only the relevant geometries will be passed to the ballot caster (member of voteCasters).</p>
 
 <h2 id="election-dimension">Election Dimension</h2>
 <p>The Election class handles deciding what geometry to send to the ballot caster. It will send p1 or p2, if 1D or 2D, respectively.</p>

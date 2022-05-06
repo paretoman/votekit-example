@@ -1,6 +1,7 @@
 /** @module */
 
-import CandidateDistributionSampler from '../election/CandidateDistributionSampler.js'
+import CandidateDistributionSampler1D from '../election/CandidateDistributionSampler1D.js'
+import CandidateDistributionSampler2D from '../election/CandidateDistributionSampler2D.js'
 
 /**
  * A simple list of candidateDnSim instances.
@@ -8,13 +9,17 @@ import CandidateDistributionSampler from '../election/CandidateDistributionSampl
  * It also checks if that member exists. Alternatively, it was deleted.
  * @constructor
  */
-export default function CandidateDnSimList(sim) {
+export default function CandidateDnSimList(sim, changes) {
     const self = this
 
     const simCanDns = []
+    self.rendererMaker = () => ({ render: () => {} })
+
+    // Data Setters and Getters //
 
     self.newCandidate = function (simCanDn) {
         simCanDns.push(simCanDn)
+        simCanDn.graphic.setRenderer(self.rendererMaker)
     }
 
     // get sim entities that exist
@@ -30,17 +35,38 @@ export default function CandidateDnSimList(sim) {
     }
     self.getCandidateDistributionsAll = () => simCanDns.map((simCanDn) => simCanDn.canDn)
 
+    // Update //
+
+    self.update = () => {
+        if (changes.checkNone()) return
+
+        self.startSampler()
+    }
+
     self.startSampler = () => {
-        const canDns = self.getCandidateDistributions()
-        if (canDns.length === 0) return
-        self.sampler = new CandidateDistributionSampler(canDns)
+        const canDnsList = self.getCandidateDistributions()
+        if (canDnsList.length === 0) return
+        const { dimensions } = sim.election
+        const CDnSampler = (dimensions === 1)
+            ? CandidateDistributionSampler1D
+            : CandidateDistributionSampler2D
+        self.sampler = new CDnSampler(canDnsList)
     }
     self.updateXY = () => {
         simCanDns.forEach((simCanDn) => simCanDn.canDn.updateXY())
     }
+
+    // Render //
+
     self.render = () => {
-        const canDns = self.getCandidateDistributions()
-        canDns.forEach((canDn) => canDn.render())
+        simCanDns.forEach((simCanDn) => {
+            if (simCanDn.canDn.exists) simCanDn.graphic.renderer.render()
+        })
+    }
+
+    self.setRenderer = (rendererMaker) => {
+        self.rendererMaker = rendererMaker
+        simCanDns.forEach((simCanDn) => simCanDn.graphic.setRenderer(rendererMaker))
     }
     self.renderForeground = () => {
         if (sim.showGhosts) {
@@ -50,11 +76,11 @@ export default function CandidateDnSimList(sim) {
         }
     }
     self.renderForegroundExisting = () => {
-        const canDns = self.getCandidateDistributions()
-        canDns.forEach((canDn) => canDn.renderForeground())
+        simCanDns.forEach((simCanDn) => {
+            if (simCanDn.canDn.exists) simCanDn.graphic.renderForeground()
+        })
     }
     self.renderForegroundAll = () => {
-        const cans = self.getCandidateDistributionsAll()
-        cans.forEach((can) => can.renderForeground())
+        simCanDns.forEach((simCanDn) => simCanDn.graphic.renderForeground())
     }
 }

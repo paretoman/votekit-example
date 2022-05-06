@@ -1,6 +1,5 @@
 /** @module */
 
-import CircleGraphic from './CircleGraphic.js'
 import tooltipForEntity from '../tooltips/tooltipForEntity.js'
 
 /**
@@ -149,11 +148,4 @@ export default function VoterShape(
     // Rendering
 
     self.color = '#88888888'
-    const circle = new CircleGraphic(self, 13, screen)
-    self.circle = circle
-
-    self.renderForeground = () => {
-        // handle
-        circle.render()
-    }
 }

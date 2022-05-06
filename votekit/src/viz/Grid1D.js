@@ -1,4 +1,4 @@
-import colorBlend from '../election/colorBlend.js'
+import colorBlend from './colorBlend.js'
 
 /**
  * Draw grid cells to show votes.
@@ -6,17 +6,18 @@ import colorBlend from '../election/colorBlend.js'
  * @param {Screen} screen
  * @constructor
  */
-export default function Grid1D(gridData, candidateSimList, screen) {
+export default function Grid1D(candidateSimList, screen) {
     const self = this
 
-    const cans = candidateSimList.getCandidates()
-    const { grid, voteSet, voterGeom } = gridData
-
-    const { x, w, densityProfile } = voterGeom
     const h = 200
     const center = 100
 
-    const nCans = cans.length
+    let gridData
+    let canList
+    self.update = (gridData0) => {
+        gridData = gridData0
+        canList = candidateSimList.getCandidates()
+    }
 
     self.renderBackground = function () {
         const { ctx } = screen
@@ -24,6 +25,7 @@ export default function Grid1D(gridData, candidateSimList, screen) {
         ctx.globalAlpha = 0.7
 
         // draw each can separately
+        const nCans = canList.length
         for (let i = 0; i < nCans; i++) {
             ctx.strokeStyle = '#dddddd'
             // ctx.strokeStyle = '#333333'
@@ -37,10 +39,11 @@ export default function Grid1D(gridData, candidateSimList, screen) {
         const { ctx } = screen
         ctx.save()
         ctx.globalAlpha = 0.7
+        const nCans = canList.length
         for (let i = 0; i < nCans; i++) {
             // draw image
-            ctx.fillStyle = cans[i].color
-            ctx.strokeStyle = colorBlend([0.8, 0.2], [cans[i].color, '#000000'])
+            ctx.fillStyle = canList[i].color
+            ctx.strokeStyle = colorBlend([0.8, 0.2], [canList[i].color, '#000000'])
             ctx.beginPath()
             shapePath(ctx, i, false)
             ctx.fill()
@@ -49,6 +52,10 @@ export default function Grid1D(gridData, candidateSimList, screen) {
         ctx.restore()
     }
     function shapePath(ctx, iCan, drawOutline) {
+        const { grid, voteSet, voterGeom } = gridData
+        const { x, w, densityProfile } = voterGeom
+        const nCans = canList.length
+
         const isGauss = (densityProfile === 'gaussian')
         const gridX = grid.x
         const sigma = w / Math.sqrt(2 * Math.PI) // w = sigma * sqrt(2*pi)

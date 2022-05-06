@@ -1,6 +1,6 @@
 /** @module */
 
-import castVotes from '../castVotes/castVotes.js'
+import voteCasters from '../castVotes/voteCasters.js'
 import CountVotes from './CountVotes.js'
 
 /**
@@ -18,7 +18,7 @@ export default function Election(menu) {
 
     // Dimensions //
 
-    /** Get the correct geometry, depending on dimension. */
+    /** Get the correct geometry, depending on number of dimensions. */
     const mapVoters = (voterShapes) => {
         if (self.dimensions === 1) {
             return voterShapes.map((vg) => (vg.shape1))
@@ -26,7 +26,7 @@ export default function Election(menu) {
         return voterShapes.map((vg) => (vg.shape2))
     }
 
-    /** Get the correct geometry, depending on dimension. */
+    /** Get the correct geometry, depending on number of dimensions. */
     const mapCans = (canList) => {
         if (self.dimensions === 1) {
             return canList.map((can) => (can.shape1))
@@ -37,33 +37,25 @@ export default function Election(menu) {
     // Election //
 
     self.runElection = function (voterShapes, canList, optionCast) {
-        const voterGeom = mapVoters(voterShapes)
-        const canGeom = mapCans(canList)
-        const casterFun = castVotes[self.countVotes.caster]
-        const votes = casterFun(canGeom, voterGeom, self.dimensions, optionCast)
+        const votes = self.castVotes(voterShapes, canList, optionCast)
         const electionResults = self.countVotes.run(canList, votes)
         return electionResults
     }
 
     // Voters cast votes for candidates.
     // There is also a separate graphical representation in Voronoi2D.js
-    self.castVotes = (voters, candidates, optionCast) => {
-        const voterShapes = voters.getVoterShapes()
-        const canList = candidates.getCandidates()
+    self.castVotes = (voterShapes, canList, optionCast, isTestVoter) => {
         const voterGeom = mapVoters(voterShapes)
         const canGeom = mapCans(canList)
-        const casterFun = castVotes[self.countVotes.caster]
-        const votes = casterFun(canGeom, voterGeom, self.dimensions, optionCast)
+        const voteCaster = voteCasters[self.countVotes.casterName]
+        const votes = voteCaster(canGeom, voterGeom, self.dimensions, optionCast, isTestVoter)
         return votes
     }
 
-    self.testVote = (voterTest, candidates, optionCast) => {
+    self.testVoteE = (voterTest, candidateSimList, optionCast) => {
         const voterShapes = [voterTest]
-        const canList = candidates.getCandidates()
-        const voterGeom = mapVoters(voterShapes)
-        const canGeom = mapCans(canList)
-        const casterFun = castVotes[self.countVotes.caster]
-        const vote = casterFun(canGeom, voterGeom, self.dimensions, optionCast, true)
+        const canList = candidateSimList.getCandidates()
+        const vote = self.castVotes(voterShapes, canList, optionCast, true)
         return vote
     }
 }

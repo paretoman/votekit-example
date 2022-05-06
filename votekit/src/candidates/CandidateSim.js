@@ -1,5 +1,7 @@
 /** @module */
 
+import CandidateGraphic from '../vizEntities/CandidateGraphic.js'
+
 /**
  * CandidateSim has functionality for a candidate that is specific to a simulation.
  * CandidateSim has a candidate component.
@@ -9,13 +11,11 @@
  * @param {DraggableManager} dragm
  * @constructor
  */
-export default function CandidateSim(candidate, dragm) {
+export default function CandidateSim(candidate, dragm, screen) {
     const self = this
     self.candidate = candidate
 
-    dragm.newSquareHandle(candidate, candidate.square)
+    self.graphic = new CandidateGraphic(candidate, screen)
 
-    self.renderForeground = () => {
-        self.candidate.renderForeground()
-    }
+    dragm.newSquareHandle(candidate, self.graphic.square)
 }

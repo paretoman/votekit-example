@@ -1,6 +1,7 @@
-import CircleGraphic from './CircleGraphic.js'
+import CircleGraphic from '../vizEntities/CircleGraphic.js'
 import hideOnClickOutside from '../tooltips/hideOnClickOutside.js'
 import tooltipForTestVoter from '../tooltips/tooltipForTestVoter.js'
+import colorBlend from '../viz/colorBlend.js'
 
 export default function VoterTest(screen, sims, sim) {
     const self = this
@@ -39,7 +40,7 @@ export default function VoterTest(screen, sims, sim) {
         } else {
             self.setAction.shape2p(p)
         }
-        self.update()
+        sim.testVote()
     }
     /** Do this when entering a state because x and y change. */
     self.updateXY = () => {
@@ -71,33 +72,38 @@ export default function VoterTest(screen, sims, sim) {
     const circle = new CircleGraphic(self, 9, screen)
     self.circle = circle
 
-    sims.one2D.dragm.newCircleHandle(self, self.circle)
-    sims.one1D.dragm.newCircleHandle(self, self.circle)
-    sims.geoOne.dragm.newCircleHandle(self, self.circle)
+    sims.one.dragm.newCircleHandle(self, self.circle)
     sims.sample.dragm.newCircleHandle(self, self.circle)
 
     // Rendering
 
     let tooltip = {}
 
-    self.update = () => {
+    self.update = (vote, candidateSimList) => {
         // who would this test point vote for?
-        const vote = sim.testVote()
         if (vote === undefined) return null
 
-        self.color = vote.color
+        const canList = candidateSimList.getCandidates()
+        const colorSet = canList.map((can) => can.color)
+        self.colorSet = colorSet
+
+        const { tallyFractions } = vote
+        self.color = colorBlend(tallyFractions, colorSet)
 
         if (tooltip.box) {
-            tooltip.update(vote)
+            tooltip.update(vote, self.color, self.colorSet)
         }
 
         return vote
     }
 
     self.click = () => {
-        const vote = self.update()
+        const vote = sim.testVote()
+        if (vote === null) return
+
         if (tooltip.box) tooltip.box.remove()
-        tooltip = tooltipForTestVoter(self, screen, vote)
+        tooltip = tooltipForTestVoter(self, screen)
+        tooltip.update(vote, self.color, self.colorSet)
     }
 
     self.renderForeground = () => {

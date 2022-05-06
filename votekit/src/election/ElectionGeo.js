@@ -1,6 +1,6 @@
 /** @module */
 
-import colorBlend, { toRGBA } from './colorBlend.js'
+import { range } from '../utilities/jsHelpers.js'
 
 /**
  * An election with many districts.
@@ -17,149 +17,155 @@ export default function ElectionGeo(election) {
 
     const optionCast = { usr: 32 }
 
-    self.updateVotes = (voterGeoList, candidateSimList) => {
-        const cans = candidateSimList.getCandidates()
+    self.runElectionSim = (voterGeoList, candidateSimList, changes) => {
+        if (changes.checkNone()) return { error: 'No Changes' }
 
+        const canList = candidateSimList.getCandidates()
+
+        const geoElectionResults = self.runElection2(voterGeoList, canList)
+
+        return geoElectionResults
+    }
+
+    self.runElection2 = (voterGeoList, canList) => {
         if (voterGeoList.getVoterSims().length === 0) return { error: 'no voters' }
-        if (cans.length === 0) return { error: 'no candidates' }
+        if (canList.length === 0) return { error: 'no candidates' }
 
-        const resultsStatewide = runStatewideElection(voterGeoList, cans)
+        const votesByTract = castVotesByTract(voterGeoList, canList)
 
-        const resultsByTract = runTractElections(voterGeoList, cans)
-        const colorByTract = colorTracts(resultsByTract, cans)
+        const resultsStatewide = countStatewideElection(votesByTract, canList)
 
-        const resultsByDistrict = runDistrictElections(voterGeoList, cans)
-        const colorOfWinsByDistrict = colorDistrictWins(resultsByDistrict, cans)
-        const colorOfVoteByDistrict = colorDistrictVote(resultsByDistrict, cans)
-        const winsByDistrict = updateWins(resultsByDistrict, cans)
+        const resultsByTract = countTractElections(votesByTract, canList)
 
-        candidateSimList.setCandidateWins(winsByDistrict)
-        candidateSimList.setCandidateFractions(resultsStatewide.votes.tallyFractions)
+        const resultsByDistrict = countDistrictElections(votesByTract, canList, voterGeoList)
+        const allocation = sumAllocations(resultsByDistrict, canList)
 
-        return {
+        const geoElectionResults = {
             resultsStatewide,
             resultsByTract,
-            colorByTract,
             resultsByDistrict,
-            colorOfVoteByDistrict,
-            winsByDistrict,
-            colorOfWinsByDistrict,
+            allocation,
         }
+        return geoElectionResults
+    }
+
+    function castVotesByTract(voterGeoList, canList) {
+        const { voterGroupsByTract } = voterGeoList
+
+        const votesByTract = voterGroupsByTract.map(
+            (row) => row.map(
+                (voterGroups) => election.castVotes(voterGroups, canList, optionCast),
+            ),
+        )
+        return votesByTract
     }
 
     /** Show tallies over all the districts
      * Find statewide support for candidates (parties).
      */
-    function runStatewideElection(voterGeoList, cans) {
-        const { allVoterGroups } = voterGeoList
-        const resultsStatewide = election.runElection(allVoterGroups, cans, optionCast)
+    function countStatewideElection(votesByTract, canList) {
+        const numCans = canList.length
+        const allVotes = combineVotes(votesByTract, numCans)
+
+        const resultsStatewide = election.countVotes.run(canList, allVotes)
         return resultsStatewide
     }
 
-    /** Visualize voter demographics according to votes for candidates within a voterGroup.
-     * Hold mini-elections within a voterGroup.
-     */
-    function runTractElections(voterGeoList, cans) {
-        const { voterGroupsByTract } = voterGeoList
+    function combineVotes(votesByTract, numCans) {
+        // sum tallyFractions
+        const totals = Array(numCans).fill(0)
+        votesByTract.forEach(
+            (row) => row.forEach(
+                (votes) => {
+                    const { tallyFractions } = votes
+                    for (let k = 0; k < numCans; k++) {
+                        totals[k] += tallyFractions[k]
+                    }
+                },
+            ),
+        )
+        const norm = 1 / totals.reduce((p, c) => p + c)
+        const tallyFractions = totals.map((t) => t * norm)
+        return { tallyFractions }
+    }
 
-        const resultsByTract = voterGroupsByTract.map(
+    /** Visualize voter demographics according to votes for candidates within a tract.
+     * Hold mini-elections within a tract.
+     */
+    function countTractElections(votesByTract, canList) {
+        const resultsByTract = votesByTract.map(
             (row) => row.map(
-                (voterShapes) => election.runElection(voterShapes, cans, optionCast),
+                (votes) => election.countVotes.run(canList, votes),
             ),
         )
         return resultsByTract
     }
 
-    function colorTracts(resultsByTract, cans) {
-        // get color
-        const colorSet = cans.map((can) => can.color)
-        const colorByTract = resultsByTract.map(
-            (row) => row.map(
-                (electionResults) => {
-                    const { tallyFractions } = electionResults.votes
-                    const color = toRGBA(colorBlend(tallyFractions, colorSet))
-                    return color
-                },
-            ),
-        )
-        return colorByTract
-    }
-
     /** Run separate elections in each district. */
-    function runDistrictElections(voterGeoList, cans) {
+    function countDistrictElections(votesByTract, canList, voterGeoList) {
         // Loop through districts.
         // Find who won.
 
-        const { voterGroupsByDistrict } = voterGeoList
+        const votesByDistrict = combineVotesByDistrict(votesByTract, canList, voterGeoList)
 
-        const resultsByDistrict = voterGroupsByDistrict.map(
-            (voterShapes) => election.runElection(voterShapes, cans, optionCast),
+        const resultsByDistrict = votesByDistrict.map(
+            (votes) => election.countVotes.run(canList, votes),
         )
         return resultsByDistrict
     }
-    function colorDistrictWins(resultsByDistrict, cans) {
-        // calculate color for win map
-        let colorOfWinsByDistrict
-        if (election.countVotes.checkElectionType() === 'singleWinner') {
-            colorOfWinsByDistrict = resultsByDistrict.map(
-                (electionResults) => electionResults.winner.color,
-            )
-        } else {
-            const colorSet = cans.map((can) => can.color)
-            colorOfWinsByDistrict = resultsByDistrict.map(
-                (electionResults) => {
-                    const { allocation } = electionResults
-                    const sum = allocation.reduce((p, c) => p + c)
-                    const fractions = allocation.map((x) => x / sum)
-                    const color = colorBlend(fractions, colorSet)
-                    return color
-                },
-            )
-        }
-        return colorOfWinsByDistrict
+
+    function combineVotesByDistrict(votesByTract, canList, voterGeoList) {
+        const { census } = voterGeoList.districtMaker
+        const { nd } = voterGeoList
+        const numCans = canList.length
+
+        // loop through districts
+        // each district has a census with a list of tracts with weights
+        // tracts are listed by index
+        // This is the same index as the votes list uses.
+        const votesByDistrict = range(nd).map((iDistrict) => {
+            const cen = census[iDistrict]
+
+            // sum tallyFractions
+            const totals = Array(numCans).fill(0)
+            for (let j = 0; j < cen.length; j++) {
+                const [gx, gy, gf] = cen[j]
+                const { tallyFractions } = votesByTract[gx][gy]
+                for (let k = 0; k < numCans; k++) {
+                    totals[k] += tallyFractions[k] * gf
+                }
+            }
+            const norm = 1 / totals.reduce((p, c) => p + c)
+            const tallyFractions = totals.map((t) => t * norm)
+            return { tallyFractions }
+        })
+        return votesByDistrict
     }
 
     // Show wins across all districts for each candidate
-    function updateWins(resultsByDistrict, cans) {
-        // make a histogram of winsByDistrict
-        const numCandidates = cans.length
-        const winsByDistrict = Array(numCandidates).fill(0)
+    function sumAllocations(resultsByDistrict, canList) {
+        // make a histogram of allocation
+        const numCandidates = canList.length
+        const allocation = Array(numCandidates).fill(0)
         if (election.countVotes.checkElectionType() === 'singleWinner') {
             const iWinners = resultsByDistrict.map((electionResults) => electionResults.iWinner)
             iWinners.forEach((iWinner) => {
-                winsByDistrict[iWinner] += 1
+                allocation[iWinner] += 1
             })
         } else {
             resultsByDistrict.forEach(
                 (electionResults) => {
-                    const { allocation } = electionResults
                     for (let i = 0; i < numCandidates; i++) {
-                        winsByDistrict[i] += allocation[i]
+                        allocation[i] += electionResults.allocation[i]
                     }
                 },
             )
         }
-        return winsByDistrict
+        return allocation
     }
 
-    /** Update color for each district, based on votes for each candidate.
-     * Blend candidate colors in proportion to their votes.
-     */
-    function colorDistrictVote(resultsByDistrict, cans) {
-        const colorOfVoteByDistrict = resultsByDistrict.map((electionResults) => {
-            const { tallyFractions } = electionResults.votes
-            const colorSet = cans.map((can) => can.color)
-            const color = colorBlend(tallyFractions, colorSet)
-            return color
-        })
-        return colorOfVoteByDistrict
-    }
-
-    self.testVote = (voterTest, candidateSimList) => {
-        const vote = election.testVote(voterTest, candidateSimList)
-        const i = vote.tallyFractions.indexOf(1)
-        const cans = candidateSimList.getCandidates()
-        vote.color = cans[i].color
+    self.testVoteES = (voterTest, candidateSimList) => {
+        const vote = election.testVoteE(voterTest, candidateSimList)
         return vote
     }
 }

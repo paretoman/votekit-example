@@ -2,10 +2,13 @@
 
 import CandidateDnSimList from '../../candidateDns/CandidateDnSimList.js'
 import CandidateDnSim from '../../candidateDns/CandidateDnSim.js'
-import VizSample2D from '../../viz/VizSample2D.js'
 import VoterSimList from '../../voters/VoterSimList.js'
 import SimBase from './SimBase.js'
 import VoterSim from '../../voters/VoterSim.js'
+import VoterGeoList from '../../voters/VoterGeoList.js'
+import VizSample from '../../viz/VizSample.js'
+import VizSampleDensity1D from '../../viz/VizSampleDensity1D.js'
+import VizSampleDensity2D from '../../viz/VizSampleDensity2D.js'
 
 /**
  * Simulate many sample elections with
@@ -15,35 +18,59 @@ import VoterSim from '../../voters/VoterSim.js'
  * @param {Menu} menu
  * @param {Changes} changes
  * @param {ElectionSample} electionSample
+ * @param {ElectionSampleGeo} electionSampleGeo
  * @param {Sim} sim
  * @constructor
  */
-export default function SimSample(screen, menu, changes, electionSample, sim) {
+export default function SimSample(screen, menu, changes, electionSample, electionSampleGeo, sim) {
     const self = this
 
     SimBase.call(self, screen, changes, sim)
 
-    const candidateSimList = new CandidateDnSimList(sim)
+    // Entities //
+
+    const candidateDnSimList = new CandidateDnSimList(sim, changes)
+    const voterSimList = new VoterSimList(sim)
+    const voterGeoList = new VoterGeoList(screen, sim, changes)
 
     self.addSimCandidateDistribution = (canDn) => {
-        candidateSimList.newCandidate(new CandidateDnSim(canDn, self.dragm))
+        candidateDnSimList.newCandidate(new CandidateDnSim(canDn, self.dragm, screen))
     }
-
-    const sampleVoters = new VoterSimList(sim)
 
     self.addSimVoterCircle = (voterShape) => {
-        sampleVoters.newVoterSim(new VoterSim(voterShape, self.dragm, screen))
+        voterGeoList.newVoterSim(new VoterSim(voterShape, self.dragm, screen))
+        voterSimList.newVoterSim(new VoterSim(voterShape, self.dragm, screen))
     }
 
-    const vizSample2D = new VizSample2D(sampleVoters, screen)
+    changes.add(['districts'])
+
+    // Strategies //
+
+    let voterList
+    let electionStrategy
+    let vizSample
+    function enterStrategy() {
+        voterList = (sim.geo) ? voterGeoList : voterSimList
+
+        electionStrategy = (sim.geo) ? electionSampleGeo : electionSample
+
+        const doDensity = true // TODO : make into an option, perhaps
+        const VizSampleDensity = (sim.election.dimensions === 1)
+            ? VizSampleDensity1D
+            : VizSampleDensity2D
+        const VizSampleStrat = (doDensity) ? VizSampleDensity : VizSample
+        vizSample = new VizSampleStrat(voterList, candidateDnSimList, screen, changes, sim)
+    }
+
+    // Main State Machine Functions //
 
     const superEnter = self.enter
     self.enter = () => {
         superEnter()
         sim.candidateDnAdd.canDnButton.show()
-        sim.election.setDimensions(2)
-        sampleVoters.updateXY()
-        candidateSimList.updateXY()
+        enterStrategy()
+        voterList.updateXY()
+        candidateDnSimList.updateXY()
     }
 
     self.exit = () => {
@@ -51,33 +78,30 @@ export default function SimSample(screen, menu, changes, electionSample, sim) {
     }
 
     self.update = () => {
-        if (changes.checkNone()) {
-            const addResult = electionSample.addSim(sampleVoters, candidateSimList)
-            const { noChange, newPoints, points } = addResult
-            // changes.clear()
-            if (!noChange) {
-                vizSample2D.update(newPoints, points)
-                // changed, so re-render
-                screen.clear()
-                self.render()
-            }
-        } else {
-            // clear changes, reset to []
-            changes.clear()
-            candidateSimList.startSampler()
-            vizSample2D.start()
-            electionSample.startSim()
+        // Update players. Run an election. Get result. Visualize result.
+        // The election handles any changes.
+        // The electionResults communicates how to visualize the election.
+
+        voterList.update()
+        candidateDnSimList.update()
+        const { dimensions } = sim.election
+        const addResult = electionStrategy
+            .update(voterList, candidateDnSimList, changes, dimensions)
+        vizSample.update(addResult)
+        changes.clear()
+
+        const { pointsChanged } = addResult
+        if (pointsChanged) {
             screen.clear()
             self.render()
         }
     }
 
     self.render = () => {
-        vizSample2D.render()
-        candidateSimList.render()
+        vizSample.render()
     }
     self.renderForeground = () => {
-        sampleVoters.renderForeground()
-        candidateSimList.renderForeground()
+        voterList.renderForeground()
+        candidateDnSimList.renderForeground()
     }
 }

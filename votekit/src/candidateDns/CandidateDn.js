@@ -1,7 +1,6 @@
 /** @module */
 
 import tooltipForEntity from '../tooltips/tooltipForEntity.js'
-import SquareGraphic from '../candidates/SquareGraphic.js'
 
 /**
  * This represents a spatial distribution of candidates.
@@ -44,6 +43,12 @@ export default function CandidateDistribution(
             candidateDnCommander.setForListSenders.shape2p.command(id, shape2p, shape2p),
             candidateDnCommander.setForListSenders.shape1x.command(id, shape1.x, shape1.x),
             candidateDnCommander.setForListSenders.shape2w.command(id, shape2.w, shape2.w),
+            candidateDnCommander.setForListSenders.shape1w.command(id, shape1.w, shape1.w),
+            candidateDnCommander.setForListSenders.shape1densityProfile.command(
+                id,
+                shape1.densityProfile,
+                shape1.densityProfile,
+            ),
         ]
         // Either load the commands because we don't want to create an item of history
         // Or do the commands because want to store an item in history, so that we can undo.
@@ -78,7 +83,7 @@ export default function CandidateDistribution(
         self.shape1.x = p
         if (sim.election.dimensions === 1) {
             self.x = p
-            self.y = 150
+            self.y = 250
         }
         changes.add(['draggables'])
     }
@@ -110,6 +115,24 @@ export default function CandidateDistribution(
         candidateDnCommander.setForListSenders.shape2w.go(id, newW, cur)
     }
 
+    self.setAction.shape1w = (newW) => {
+        self.shape1.w = newW
+        changes.add(['width'])
+    }
+    self.setW1 = (newW) => {
+        const cur = candidateDnCommander.setForListSenders.shape1w.getCurrentValue(id)
+        candidateDnCommander.setForListSenders.shape1w.go(id, newW, cur)
+    }
+
+    /** Density Profile can be "gaussian" or "step" */
+    self.setAction.shape1densityProfile = (newDensityProfile1) => {
+        self.shape1.densityProfile = newDensityProfile1
+        changes.add(['densityProfile'])
+    }
+    self.setDensityProfile1 = (newDensityProfile1) => {
+        const cur = candidateDnCommander.setForListSenders.shape1densityProfile.getCurrentValue(id)
+        candidateDnCommander.setForListSenders.shape1densityProfile.go(id, newDensityProfile1, cur)
+    }
     self.instantiate()
 
     // Click Handler
@@ -121,20 +144,4 @@ export default function CandidateDistribution(
     // Rendering
 
     self.color = '#ccc'
-
-    const square = new SquareGraphic(self, 21, 21, screen) // square is for rendering
-    self.square = square
-
-    self.render = function () {
-        const { ctx } = screen
-
-        ctx.beginPath()
-        // ctx.fillStyle = "grey"
-        ctx.arc(self.x, self.y, self.shape2.w * 0.5, 0, 2 * Math.PI)
-        // ctx.fill()
-        ctx.stroke()
-    }
-    self.renderForeground = () => {
-        square.render()
-    }
 }

@@ -1,13 +1,19 @@
 /** @module */
 
+// import GeoMaps from './GeoMaps.js'
+import VoterRender1D from './VoterRender1D.js'
+import VoterRender2D from './VoterRender2D.js'
+
 /**
  * Show Voters
- * @param {SampleVoters} sampleVoters
+ * @param {VoterSimList} voterSimList
  * @param {screen} screen - draw to the screen
  * @constructor
  */
-export default function VizSample2D(sampleVoters, screen) {
+export default function VizSample(voterSimList, candidateDnSimList, screen, changes, sim) {
     const self = this
+
+    // const geoMaps = new GeoMaps(voterSimList, candidateDnSimList, screen, sim)
 
     // Candidates //
 
@@ -17,18 +23,40 @@ export default function VizSample2D(sampleVoters, screen) {
     canvas2.height = screen.canvas.height
     const context2 = canvas2.getContext('2d')
 
+    const { dimensions } = sim.election
+
+    // voter renderer factory //
+    const VoterRenderer = (dimensions === 1) ? VoterRender1D : VoterRender2D
+    voterSimList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
+    candidateDnSimList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
+
+    self.update = function (addResult) {
+        if (changes.checkNone() === false) {
+            self.start()
+        }
+
+        const { pointsChanged, newPoints, points } = addResult
+
+        if (pointsChanged) {
+            self.updatePoints(newPoints, points)
+        }
+    }
+
     self.start = function () {
         clearBuffer()
     }
 
-    self.update = function (newPoints, points) {
+    self.updatePoints = function (newPoints, points) {
         self.points = points
         renderToBuffer(newPoints)
     }
 
     self.render = () => {
+        // geoMaps.renderPolicyNoise()
         self.renderCans()
-        self.renderVoters()
+
+        voterSimList.render()
+        candidateDnSimList.render()
     }
 
     self.renderCans = function () {
@@ -55,7 +83,10 @@ export default function VizSample2D(sampleVoters, screen) {
             const p = newPoints[i]
             // dot
             ctx.beginPath()
-            ctx.arc(p.x, p.y, 3, 0, 2 * Math.PI)
+            const y = (dimensions === 1)
+                ? Math.random() * 100 + 0
+                : p.y
+            ctx.arc(p.x, y, 2, 0, 2 * Math.PI)
             ctx.fill()
         }
     }
@@ -69,21 +100,5 @@ export default function VizSample2D(sampleVoters, screen) {
     function noBufferRender() {
         const { ctx } = screen
         renderPoints(ctx, self.points)
-    }
-
-    // Voters //
-
-    self.renderVoters = function () {
-        const { ctx } = screen
-        const voterShapes = sampleVoters.getVoterShapes()
-        voterShapes.forEach((voterGroup) => {
-            // circle
-            ctx.beginPath()
-            // ctx.fillStyle = "#eee"
-            const { x, y, shape2 } = voterGroup
-            ctx.arc(x, y, shape2.w * 0.5, 0, 2 * Math.PI)
-            // ctx.fill()
-            ctx.stroke()
-        })
     }
 }

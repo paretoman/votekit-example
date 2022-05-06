@@ -11,7 +11,7 @@ import { Delaunay } from '../lib/snowpack/build/snowpack/pkg/d3-delaunay.js'
 
 /**
  * Draw Voronoi cells to show votes.
- * Voronoi1D is called by VizOne1D.
+ * Voronoi1D is called by VizOne.
  * @param {VoterGroup} voterGroup
  * @param {CandidateSimList} candidateSimList
  * @param {Screen} screen
@@ -20,10 +20,14 @@ import { Delaunay } from '../lib/snowpack/build/snowpack/pkg/d3-delaunay.js'
 export default function Voronoi1D(voterGroup, candidateSimList, screen) {
     const self = this
 
-    const cans = candidateSimList.getCandidates()
-    const points = cans.map((e) => [e.x, e.y])
-    const delaunay = Delaunay.from(points)
-    const voronoi = delaunay.voronoi([0, 0, screen.width, screen.height])
+    let voronoi
+    let canList
+    self.update = function () {
+        canList = candidateSimList.getCandidates()
+        const points = canList.map((e) => [e.x, e.y])
+        const delaunay = Delaunay.from(points)
+        voronoi = delaunay.voronoi([0, 0, screen.width, screen.height])
+    }
 
     self.render = function () {
         const { ctx } = screen
@@ -43,11 +47,11 @@ export default function Voronoi1D(voterGroup, candidateSimList, screen) {
         // ctx.closePath()
         ctx.clip()
 
-        const n = cans.length
+        const n = canList.length
         for (let i = 0; i < n; i++) {
             ctx.beginPath()
             voronoi.renderCell(i, ctx)
-            ctx.fillStyle = cans[i].color
+            ctx.fillStyle = canList[i].color
             ctx.fill()
             ctx.stroke()
         }

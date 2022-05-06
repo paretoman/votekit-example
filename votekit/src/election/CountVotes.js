@@ -10,7 +10,6 @@ import electionMethods from '../electionMethods/electionMethods.js'
  * while CountVotes just considers the votes and the result of counting.
  * Then CountVotes returns a summary of how the election went.
  * Perhaps CountingMethod is a more specific name.
- * @param {Candidate[]} candidates
  * @param {Menu} menu
  * @constructor
  */
@@ -19,7 +18,7 @@ export default function CountVotes(menu) {
 
     self.seats = 1
 
-    self.run = (candidates, votes) => {
+    self.run = (canList, votes) => {
         // why have two different kinds of results?
         // countResults, the smaller one,
         //   is in the context of the election method,
@@ -31,11 +30,11 @@ export default function CountVotes(menu) {
             const electionMethodOptions = { seats: self.seats, threshold: 0.1 }
             const countResults = electionMethods[self.electionMethod](votes, electionMethodOptions)
             const { allocation } = countResults
-            electionResults = { allocation, candidates, votes }
+            electionResults = { allocation, canList, votes }
         } else {
             const countResults = electionMethods[self.electionMethod](votes)
             const { iWinner } = countResults
-            const winner = candidates[iWinner]
+            const winner = canList[iWinner]
             electionResults = { iWinner, winner, votes }
         }
         return electionResults
@@ -46,16 +45,16 @@ export default function CountVotes(menu) {
     // a list of election methods
     self.electionMethodList = [
         {
-            name: 'Huntington Hill', value: 'huntingtonHill', type: 'allocation', caster: 'castPlurality',
+            name: 'Huntington Hill', value: 'huntingtonHill', type: 'allocation', casterName: 'castPlurality',
         },
         {
-            name: 'Plurality', value: 'plurality', type: 'singleWinner', caster: 'castPlurality',
+            name: 'Plurality', value: 'plurality', type: 'singleWinner', casterName: 'castPlurality',
         },
         {
-            name: 'Random Winner', value: 'randomWinner', type: 'singleWinner', caster: 'castPlurality',
+            name: 'Random Winner', value: 'randomWinner', type: 'singleWinner', casterName: 'castPlurality',
         },
         {
-            name: 'Score', value: 'score', type: 'singleWinner', caster: 'castScore',
+            name: 'Score', value: 'score', type: 'singleWinner', casterName: 'castScore',
         },
     ]
 
@@ -72,7 +71,7 @@ export default function CountVotes(menu) {
      */
     self.setElectionMethod = (value) => {
         self.electionMethod = value
-        self.caster = self.electionMethodListByFunctionName[value].caster
+        self.casterName = self.electionMethodListByFunctionName[value].casterName
 
         if (self.checkElectionType() === 'allocation') {
             self.seats = 5

@@ -1,5 +1,7 @@
 /** @module */
 
+import CandidateDnGraphic from '../vizEntities/CandidateDnGraphic.js'
+
 /**
  * CandidateSim has functionality for a canDn that is specific to a simulation.
  * CandidateSim has a canDn component.
@@ -9,13 +11,11 @@
  * @param {DraggableManager} dragm
  * @constructor
  */
-export default function CandidateDnSim(canDn, dragm) {
+export default function CandidateDnSim(canDn, dragm, screen) {
     const self = this
     self.canDn = canDn
 
-    dragm.newSquareHandle(canDn, canDn.square)
+    self.graphic = new CandidateDnGraphic(canDn, screen)
 
-    self.renderForeground = () => {
-        self.canDn.renderForeground()
-    }
+    dragm.newSquareHandle(canDn, self.graphic.square)
 }

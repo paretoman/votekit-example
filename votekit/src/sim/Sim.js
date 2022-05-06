@@ -1,18 +1,18 @@
 /** @module */
 
-import SimOne2D from './states/SimOne2D.js'
 import SimSample from './states/SimSample.js'
-import SimGeoOne from './states/SimGeoOne.js'
 import VoterShapeAdd from '../voters/VoterShapeAdd.js'
 import CandidateAdd from '../candidates/CandidateAdd.js'
 import CandidateDnAdd from '../candidateDns/CandidateDnAdd.js'
 import addSimControlsLabel from './addSimControlsLabel.js'
-import SimOne1D from './states/SimOne1D.js'
 import VoterTest from '../voters/VoterTest.js'
 import ElectionOne from '../election/ElectionOne.js'
 import ElectionSample from '../election/ElectionSample.js'
 import ElectionGeo from '../election/ElectionGeo.js'
 import Election from '../election/Election.js'
+import SimBase from './states/SimBase.js'
+import SimOne from './states/SimOne.js'
+import ElectionSampleGeo from '../election/ElectionSampleGeo.js'
 
 /**
  * Simulation is the main task we're trying to accomplish in this program.
@@ -42,17 +42,17 @@ export default function Sim(
     const electionOne = new ElectionOne(election)
     const electionSample = new ElectionSample(election)
     const electionGeo = new ElectionGeo(election)
+    const electionSampleGeo = new ElectionSampleGeo(election, electionGeo)
 
     self.election = election
 
     // States //
 
     const sims = {
-        one2D: new SimOne2D(screen, menu, changes, electionOne, self),
-        one1D: new SimOne1D(screen, menu, changes, electionOne, self),
+        one: new SimOne(screen, menu, changes, electionOne, electionGeo, self),
         // eslint-disable-next-line max-len
-        sample: new SimSample(screen, menu, changes, electionSample, self),
-        geoOne: new SimGeoOne(screen, menu, changes, electionGeo, self),
+        sample: new SimSample(screen, menu, changes, electionSample, electionSampleGeo, self),
+        base: new SimBase(screen, changes, self),
     }
     self.sims = sims
 
@@ -63,29 +63,29 @@ export default function Sim(
     self.candidateDnAdd = new CandidateDnAdd(screen, layout, changes, commander, sims, self)
 
     self.voterTest = new VoterTest(screen, sims, self)
-    self.testVote = () => sims[self.state].testVote()
+    self.testVote = () => sims[self.state].testVoteSim()
 
     // Default Entities //
 
     self.candidateAdd.addCandidate({ x: 50, y: 100 }, { x: 50 }, '#e05020', true)
     self.candidateAdd.addCandidate({ x: 100, y: 50 }, { x: 100 }, '#50e020', true)
     self.candidateAdd.addCandidate({ x: 300 - 100, y: 300 - 50 }, { x: 200 }, '#2050e0', true)
-    self.candidateDnAdd.addCandidateDistribution({ x: 150, y: 150, w: 200 }, { x: 150 }, true)
+    self.candidateDnAdd.addCandidateDistribution({ x: 150, y: 150, w: 200 }, { x: 150, w: 200, densityProfile: 'gaussian' }, true)
     self.voterShapeAdd.addVoterCircle({ x: 50, y: 150, w: 200 }, { x: 50, w: 200, densityProfile: 'gaussian' }, true)
     self.voterShapeAdd.addVoterCircle({ x: 250, y: 150, w: 200 }, { x: 250, w: 200, densityProfile: 'gaussian' }, true)
 
     // State Machine //
 
-    self.state = 'one2D' // default
+    self.state = 'one' // default
     self.viz = 'one'
     self.geo = false
     self.election.setDimensions(2)
     // self.typeExit = self.state
-    changes.add(['simType', 'geo', 'dimensions', 'viz'])
+    changes.add(['geo', 'dimensions', 'viz'])
 
     self.update = () => {
         // state change
-        if (changes.check(['simType'])) {
+        if (changes.check(['geo', 'dimensions', 'viz', 'electionMethod'])) {
             // exit states
             Object.keys(sims).forEach((k) => sims[k].exit())
             // compute state
@@ -104,13 +104,7 @@ export default function Sim(
         // Also, we don't yet have implementations of all the possible
         // combinations of these state variables.
         if (self.viz === 'one') {
-            if (self.geo === false) {
-                if (self.election.dimensions === 1) {
-                    return 'one1D'
-                }
-                return 'one2D'
-            }
-            return 'geoOne'
+            return 'one'
         }
         return 'sample'
     }
@@ -141,7 +135,7 @@ export default function Sim(
             prop: 'viz',
             setProp: (p) => { self.viz = p },
             options: vizList,
-            change: ['simType', 'viz'],
+            change: ['viz'],
         },
     )
 
@@ -156,7 +150,7 @@ export default function Sim(
             prop: 'geo',
             setProp: (p) => { self.geo = p },
             options: geoList,
-            change: ['simType', 'geo'],
+            change: ['geo'],
         },
     )
 
@@ -171,7 +165,7 @@ export default function Sim(
             prop: 'dimensions',
             setProp: (p) => { self.election.setDimensions(p) },
             options: dimensionList,
-            change: ['simType', 'dimension'],
+            change: ['dimensions'],
         },
     )
 }

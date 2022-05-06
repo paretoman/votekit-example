@@ -13,23 +13,37 @@ export default function VoterSimList(sim) {
 
     const list = []
     self.list = list
+    self.rendererMaker = () => ({ render: () => {} })
 
-    self.newVoterSim = function (voterGroup) {
-        list.push(voterGroup)
+    self.newVoterSim = function (voterSim) {
+        list.push(voterSim)
+        voterSim.graphic.setRenderer(self.rendererMaker)
     }
 
     self.getVoterShapes = () => list.filter((v) => v.voterShape.exists).map((v) => v.voterShape)
     self.getVoterSims = () => list.filter((v) => v.voterShape.exists)
 
-    self.update = (candidates) => {
-        list.forEach((v) => { if (v.voterShape.exists) v.update(candidates) })
-    }
+    self.update = () => { } // strategy pattern. There is a similar function for VoterGeoList
     self.updateXY = () => {
         list.forEach((v) => v.voterShape.updateXY())
     }
+    self.updateVoters = () => { } // strategy pattern. There is a similar function for VoterGeoList
 
     self.render = () => {
-        list.forEach((v) => { if (v.voterShape.exists) v.render() })
+        list.forEach((v) => { if (v.voterShape.exists) v.graphic.renderer.render() })
+    }
+
+    self.setRenderer = (rendererMaker) => {
+        self.rendererMaker = rendererMaker
+        list.forEach((v) => v.graphic.setRenderer(rendererMaker))
+    }
+    self.updateGraphic = (data) => {
+        const voterSimsExisting = self.getVoterSims()
+        if (data === undefined) {
+            voterSimsExisting.forEach((v) => v.graphic.renderer.update())
+        } else {
+            voterSimsExisting.forEach((v, i) => v.graphic.renderer.update(data[i]))
+        }
     }
 
     self.renderForeground = () => {
@@ -40,9 +54,12 @@ export default function VoterSimList(sim) {
         }
     }
     self.renderForegroundExisting = () => {
-        list.forEach((v) => { if (v.voterShape.exists) v.renderForeground() })
+        list.forEach((v) => { if (v.voterShape.exists) v.graphic.renderForeground() })
     }
     self.renderForegroundAll = () => {
-        list.forEach((v) => { v.renderForeground() })
+        list.forEach((v) => { v.graphic.renderForeground() })
+    }
+    self.renderBackground = () => {
+        list.forEach((v) => { if (v.voterShape.exists) v.graphic.renderer.renderBackground() })
     }
 }

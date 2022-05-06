@@ -12,36 +12,41 @@ export default function CandidateSimList(sim) {
 
     const simCans = []
 
+    // Data Setters and Getters //
+
     self.newCandidate = function (simCan) {
         simCans.push(simCan)
     }
-
     self.getSimCandidates = () => simCans.filter((simCan) => simCan.candidate.exists)
 
     self.getCandidates = () => {
         const simCansEx = self.getSimCandidates()
         return simCansEx.map((simCan) => simCan.candidate)
     }
-
     self.getCandidatesAll = () => simCans.map((simCan) => simCan.candidate)
 
+    // Update //
+
     self.setCandidateFractions = (fractions) => {
-        const cans = self.getCandidates()
-        cans.forEach((can, index) => {
+        const simCansExisting = self.getSimCandidates()
+        simCansExisting.forEach((simCan, index) => {
             const fraction = fractions[index]
-            can.setFraction(fraction)
+            simCan.graphic.setFraction(fraction)
         })
     }
     self.setCandidateWins = (winsByCandidate) => {
-        const cans = self.getCandidates()
-        cans.forEach((can, index) => {
+        const simCansExisting = self.getSimCandidates()
+        simCansExisting.forEach((simCan, index) => {
             const win = winsByCandidate[index]
-            can.setWins(win)
+            simCan.graphic.setWins(win)
         })
     }
     self.updateXY = () => {
         simCans.forEach((simCan) => simCan.candidate.updateXY())
     }
+
+    // Render //
+
     self.renderForeground = () => {
         if (sim.showGhosts) {
             self.renderForegroundAll()
@@ -50,12 +55,11 @@ export default function CandidateSimList(sim) {
         }
     }
     self.renderForegroundExisting = () => {
-        const cans = self.getCandidates()
-        cans.forEach((can) => can.renderForeground())
+        const simCansExisting = self.getSimCandidates()
+        simCansExisting.forEach((simCan) => simCan.graphic.renderForeground())
     }
     self.renderForegroundAll = () => {
-        const cans = self.getCandidatesAll()
-        cans.forEach((can) => can.renderForeground())
+        simCans.forEach((simCan) => simCan.graphic.renderForeground())
     }
-    self.numCandidates = () => simCans.length
+    self.numSimCandidates = () => simCans.length
 }
