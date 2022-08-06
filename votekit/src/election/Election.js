@@ -1,7 +1,7 @@
 /** @module */
 
 import voteCasters from '../castVotes/voteCasters.js'
-import CountVotes from './CountVotes.js'
+import SocialChoice from './SocialChoice.js'
 
 /**
  * Here we are in the context of a single election with voter objects and candidate objects.
@@ -11,7 +11,7 @@ import CountVotes from './CountVotes.js'
 export default function Election(menu) {
     const self = this
 
-    self.countVotes = new CountVotes(menu)
+    self.socialChoice = new SocialChoice(menu)
     self.dimensions = 1
 
     self.setDimensions = (d) => { self.dimensions = d }
@@ -38,24 +38,27 @@ export default function Election(menu) {
 
     self.runElection = function (voterShapes, canList, optionCast) {
         const votes = self.castVotes(voterShapes, canList, optionCast)
-        const electionResults = self.countVotes.run(canList, votes)
+        const electionResults = self.socialChoice.run(canList, votes)
         return electionResults
     }
 
     // Voters cast votes for candidates.
     // There is also a separate graphical representation in Voronoi2D.js
-    self.castVotes = (voterShapes, canList, optionCast, isTestVoter) => {
-        const voterGeom = mapVoters(voterShapes)
-        const canGeom = mapCans(canList)
-        const voteCaster = voteCasters[self.countVotes.casterName]
-        const votes = voteCaster(canGeom, voterGeom, self.dimensions, optionCast, isTestVoter)
+    self.castVotes = (voterShapes, canList, optionCast) => {
+        const voterGeoms = mapVoters(voterShapes)
+        const canGeoms = mapCans(canList)
+        const { cast } = voteCasters[self.socialChoice.casterName]
+        const votes = cast(canGeoms, voterGeoms, self.dimensions, optionCast)
         return votes
     }
 
     self.testVoteE = (voterTest, candidateSimList, optionCast) => {
         const voterShapes = [voterTest]
         const canList = candidateSimList.getCandidates()
-        const vote = self.castVotes(voterShapes, canList, optionCast, true)
+        const voterGeom = mapVoters(voterShapes)[0]
+        const canGeom = mapCans(canList)
+        const { castTestVote } = voteCasters[self.socialChoice.casterName]
+        const vote = castTestVote(canGeom, voterGeom, self.dimensions, optionCast)
         return vote
     }
 }

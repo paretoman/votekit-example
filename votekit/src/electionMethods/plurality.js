@@ -1,19 +1,18 @@
 /** @module */
 
+import { maxIndex } from '../utilities/jsHelpers.js'
+
 /**
  * the candidate with the highest tally wins
  * @param {Object} votes
- * @param {Number[]} votes.tallyFractions
- * @returns {countResults}
+ * @param {Number[]} votes.tallyFractions - A list of fractions of voters
+ * who chose a candidate, indexed by candidate.
+ * @returns {Object} socialChoiceResults
+ * @returns {Number} socialChoiceResults.iWinner - Index of winner. Indexing according to votes[].
  */
 export default function plurality(votes) {
-    const max = Math.max(...votes.tallyFractions)
-    const iWinner = votes.tallyFractions.indexOf(max)
+    const iWinner = maxIndex(votes.tallyFractions)
 
-    const countResults = { iWinner }
-    return countResults
+    const socialChoiceResults = { iWinner }
+    return socialChoiceResults
 }
-/**
- * @typedef {Object} countResults
- * @property {Number} iWinner - Index of winner. Indexing according to votes[].
- */

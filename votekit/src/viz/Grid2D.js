@@ -1,5 +1,5 @@
-import colorBlend from './colorBlend.js'
-import { toRGBA } from '../lib/colorBlendScript.js'
+/** @module */
+import colorBlender from './colorBlender.js'
 
 /**
  * Draw grid cells to show votes.
@@ -37,6 +37,7 @@ export default function Grid2D(candidateSimList, screen) {
         function fillDataSeparate() {
             // make image data
             const { nx, ny, weight } = grid
+            canvases.splice(0)
             for (let i = 0; i < canList.length; i++) {
                 const canvas = document.createElement('canvas')
                 canvas.width = nx
@@ -46,8 +47,8 @@ export default function Grid2D(candidateSimList, screen) {
 
                 const { data } = imageData
 
-                const { color } = canList[i]
-                const [r, g, b] = toRGBA(color)
+                const { colorRGBA } = canList[i]
+                const [r, g, b] = colorRGBA
 
                 let k = 0
                 for (let yp = 0; yp < ny; yp++) {
@@ -70,7 +71,7 @@ export default function Grid2D(candidateSimList, screen) {
         function fillDataBlend() {
         // make image data
             const { nx, ny, weight } = grid
-            const colorSet = canList.map((can) => can.color)
+            const colorSet = canList.map((can) => can.colorRGBA)
 
             const canvas = document.createElement('canvas')
             canvas.width = nx
@@ -84,8 +85,7 @@ export default function Grid2D(candidateSimList, screen) {
             for (let yp = 0; yp < ny; yp++) {
                 for (let xp = 0; xp < nx; xp++) {
                     const { tallyFractions } = voteSet[k]
-                    const color = colorBlend(tallyFractions, colorSet)
-                    const [r, g, b] = toRGBA(color)
+                    const [r, g, b] = colorBlender(tallyFractions, colorSet)
 
                     const a = ((isGauss) ? weight[k] : 1) * 255
 

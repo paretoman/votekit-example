@@ -4,39 +4,38 @@ import electionMethods from '../electionMethods/electionMethods.js'
 
 /**
  * Store settings and functions that deal with the election method.
- * The difference between CountVotes and Election is that
+ * The difference between SocialChoice and Election is that
  * Election encompasses all concepts of an election such as casting a vote
  * or the number of dimensions,
- * while CountVotes just considers the votes and the result of counting.
- * Then CountVotes returns a summary of how the election went.
- * Perhaps CountingMethod is a more specific name.
+ * while SocialChoice just considers the votes and the result of the election method.
+ * Then SocialChoice returns a summary of how the election went.
  * @param {Menu} menu
  * @constructor
  */
-export default function CountVotes(menu) {
+export default function SocialChoice(menu) {
     const self = this
 
     self.seats = 1
 
     self.run = (canList, votes) => {
         // why have two different kinds of results?
-        // countResults, the smaller one,
+        // socialChoiceResults, the smaller one,
         //   is in the context of the election method,
         //   which has tallies go in and analysis come out
         // electionResults, the larger one,
         //   is in the context of candidate objects and voter objects.
-        let electionResults
-        if (self.checkElectionType() === 'allocation') {
+        if (self.checkElectionType() === 'allocation' || self.checkElectionType() === 'multiWinner') {
             const electionMethodOptions = { seats: self.seats, threshold: 0.1 }
-            const countResults = electionMethods[self.electionMethod](votes, electionMethodOptions)
-            const { allocation } = countResults
-            electionResults = { allocation, canList, votes }
-        } else {
-            const countResults = electionMethods[self.electionMethod](votes)
-            const { iWinner } = countResults
-            const winner = canList[iWinner]
-            electionResults = { iWinner, winner, votes }
+            const electionMethod = electionMethods[self.electionMethod]
+            const socialChoiceResults = electionMethod(votes, electionMethodOptions)
+            const { allocation } = socialChoiceResults
+            const electionResults = { allocation, canList, votes }
+            return electionResults
         }
+        const socialChoiceResults = electionMethods[self.electionMethod](votes)
+        const { iWinner } = socialChoiceResults
+        const winner = canList[iWinner]
+        const electionResults = { iWinner, winner, votes }
         return electionResults
     }
 
@@ -45,16 +44,22 @@ export default function CountVotes(menu) {
     // a list of election methods
     self.electionMethodList = [
         {
-            name: 'Huntington Hill', value: 'huntingtonHill', type: 'allocation', casterName: 'castPlurality',
+            name: 'Huntington Hill', value: 'huntingtonHill', type: 'allocation', casterName: 'plurality',
         },
         {
-            name: 'Plurality', value: 'plurality', type: 'singleWinner', casterName: 'castPlurality',
+            name: 'Plurality', value: 'plurality', type: 'singleWinner', casterName: 'plurality',
         },
         {
-            name: 'Random Winner', value: 'randomWinner', type: 'singleWinner', casterName: 'castPlurality',
+            name: 'Random Winner', value: 'randomWinner', type: 'singleWinner', casterName: 'plurality',
         },
         {
-            name: 'Score', value: 'score', type: 'singleWinner', casterName: 'castScore',
+            name: 'Score', value: 'score', type: 'singleWinner', casterName: 'score',
+        },
+        {
+            name: 'STV', value: 'stv', type: 'multiWinner', casterName: 'ranking',
+        },
+        {
+            name: 'Minimax', value: 'minimax', type: 'singleWinner', casterName: 'pairwise',
         },
     ]
 
@@ -73,10 +78,16 @@ export default function CountVotes(menu) {
         self.electionMethod = value
         self.casterName = self.electionMethodListByFunctionName[value].casterName
 
-        if (self.checkElectionType() === 'allocation') {
+        const electionType = self.checkElectionType()
+        if (electionType === 'allocation') {
             self.seats = 5
+            self.numSampleCandidates = 10
+        } else if (electionType === 'multiWinner') {
+            self.seats = 3
+            self.numSampleCandidates = 10
         } else {
             self.seats = 1
+            self.numSampleCandidates = 5
         }
     }
 

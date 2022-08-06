@@ -8,7 +8,7 @@ import castScoreTestVote from './castScoreTestVote.js'
  * @param {Object[]} canGeoms
  * @constructor
  */
-export default function CastScoreAreaSummer(canGeoms, optionCast) {
+export default function CastScoreSummer2DGrid(canGeoms, optionCast) {
     const self = this
 
     self.sumArea = function sumArea(voterGeom) {
@@ -28,8 +28,9 @@ export default function CastScoreAreaSummer(canGeoms, optionCast) {
             const xi = grid.x[i]
             const yi = grid.y[i]
             const testVoter = { x: xi, y: yi }
-            const tallyFractions = castScoreTestVote(canGeoms, testVoter, 2)
-            voteSet[i] = { tallyFractions }
+            const vote = castScoreTestVote(canGeoms, testVoter, 2)
+            voteSet[i] = vote
+            const { tallyFractions } = vote
             totalArea += weight
             for (let k = 0; k < n; k++) {
                 area[k] += tallyFractions[k] * weight

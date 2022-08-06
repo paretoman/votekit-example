@@ -48,7 +48,7 @@ export default function ElectionSample(election) {
         const ns = 20
 
         // number of new points
-        const { seats } = election.countVotes
+        const { seats } = election.socialChoice
         const nnp = seats * ns
         const newPoints = Array(nnp)
         let q = 0
@@ -57,12 +57,7 @@ export default function ElectionSample(election) {
 
         for (let i = 0; i < ns; i++) {
             // choose a number of candidates
-            let nk
-            if (election.countVotes.checkElectionType() === 'singleWinner') {
-                nk = 5
-            } else if (election.countVotes.checkElectionType() === 'allocation') {
-                nk = 10
-            }
+            const nk = election.socialChoice.numSampleCandidates
             const canList = []
             for (let k = 0; k < nk; k++) {
                 // sample a point from the distribution of candidates
@@ -79,7 +74,7 @@ export default function ElectionSample(election) {
             // find winner position
             const electionResults = election.runElection(voterShapes, canList, optionCast)
 
-            if (election.countVotes.checkElectionType() === 'singleWinner') {
+            if (election.socialChoice.checkElectionType() === 'singleWinner') {
                 const { winner } = electionResults
 
                 // record point

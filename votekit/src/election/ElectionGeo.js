@@ -67,11 +67,33 @@ export default function ElectionGeo(election) {
         const numCans = canList.length
         const allVotes = combineVotes(votesByTract, numCans)
 
-        const resultsStatewide = election.countVotes.run(canList, allVotes)
+        const resultsStatewide = election.socialChoice.run(canList, allVotes)
         return resultsStatewide
     }
 
     function combineVotes(votesByTract, numCans) {
+        const votes = {}
+
+        if (votesByTract[0][0].tallyFractions !== undefined) {
+            // tf - tally fractions
+            const tf = statewideTallyFractions(votesByTract, numCans)
+            votes.tallyFractions = tf
+        }
+        if (votesByTract[0][0].pairwiseTallyFractions !== undefined) {
+            // pwtf - pairwise tally fractions
+            const pwtf = statewidePairwiseTallyFractions(votesByTract, numCans)
+            votes.pairwiseTallyFractions = pwtf
+        }
+        if (votesByTract[0][0].rankingTallyFractions !== undefined) {
+            // vrtf - votes ranked tally fractions
+            const vrtf = statewideRankingTallyFractions(votesByTract)
+            votes.rankingTallyFractions = vrtf.rankingTallyFractions
+            votes.cansRankedAll = vrtf.cansRankedAll
+        }
+        return votes
+    }
+
+    function statewideTallyFractions(votesByTract, numCans) {
         // sum tallyFractions
         const totals = Array(numCans).fill(0)
         votesByTract.forEach(
@@ -86,7 +108,54 @@ export default function ElectionGeo(election) {
         )
         const norm = 1 / totals.reduce((p, c) => p + c)
         const tallyFractions = totals.map((t) => t * norm)
-        return { tallyFractions }
+        return tallyFractions
+    }
+
+    function statewidePairwiseTallyFractions(votesByTract, numCans) {
+        // sum pairwiseTallyFractions
+        const pTotals = Array(numCans)
+        for (let k = 0; k < numCans; k++) {
+            pTotals[k] = Array(numCans).fill(0)
+        }
+        votesByTract.forEach(
+            (row) => row.forEach(
+                (votes) => {
+                    const { pairwiseTallyFractions } = votes
+                    for (let i = 0; i < numCans; i++) {
+                        for (let k = 0; k < numCans; k++) {
+                            pTotals[i][k] += pairwiseTallyFractions[i][k]
+                        }
+                    }
+                },
+            ),
+        )
+        const pNorm = 1 / (pTotals[0][1] + pTotals[1][0]) // sum wins and losses
+        const pairwiseTallyFractions = pTotals.map((row) => row.map((t) => t * pNorm))
+        return pairwiseTallyFractions
+    }
+
+    function statewideRankingTallyFractions(votesByTract) {
+        // concatenate rankingTallyFractions
+        let rankingTallyFractionsAll = []
+        let cansRankedAll2 = []
+        votesByTract.forEach(
+            (row) => row.forEach(
+                (votes) => {
+                    const { rankingTallyFractions, cansRankedAll } = votes
+                    rankingTallyFractionsAll = rankingTallyFractionsAll
+                        .concat(rankingTallyFractions)
+                    cansRankedAll2 = cansRankedAll2.concat(cansRankedAll)
+                },
+            ),
+        )
+        const numRows = votesByTract.length
+        const numCols = votesByTract[0].length
+        const rNorm = 1 / (numRows * numCols)
+        rankingTallyFractionsAll = rankingTallyFractionsAll.map((t) => t * rNorm)
+        return {
+            rankingTallyFractions: rankingTallyFractionsAll,
+            cansRankedAll: cansRankedAll2,
+        }
     }
 
     /** Visualize voter demographics according to votes for candidates within a tract.
@@ -95,7 +164,7 @@ export default function ElectionGeo(election) {
     function countTractElections(votesByTract, canList) {
         const resultsByTract = votesByTract.map(
             (row) => row.map(
-                (votes) => election.countVotes.run(canList, votes),
+                (votes) => election.socialChoice.run(canList, votes),
             ),
         )
         return resultsByTract
@@ -109,7 +178,7 @@ export default function ElectionGeo(election) {
         const votesByDistrict = combineVotesByDistrict(votesByTract, canList, voterGeoList)
 
         const resultsByDistrict = votesByDistrict.map(
-            (votes) => election.countVotes.run(canList, votes),
+            (votes) => election.socialChoice.run(canList, votes),
         )
         return resultsByDistrict
     }
@@ -126,20 +195,91 @@ export default function ElectionGeo(election) {
         const votesByDistrict = range(nd).map((iDistrict) => {
             const cen = census[iDistrict]
 
-            // sum tallyFractions
-            const totals = Array(numCans).fill(0)
-            for (let j = 0; j < cen.length; j++) {
-                const [gx, gy, gf] = cen[j]
-                const { tallyFractions } = votesByTract[gx][gy]
-                for (let k = 0; k < numCans; k++) {
-                    totals[k] += tallyFractions[k] * gf
-                }
+            const votes = {}
+
+            if (votesByTract[0][0].tallyFractions !== undefined) {
+                // tf - tally fractions
+                const tf = districtTallyFractions(votesByTract, cen, numCans)
+                votes.tallyFractions = tf
             }
-            const norm = 1 / totals.reduce((p, c) => p + c)
-            const tallyFractions = totals.map((t) => t * norm)
-            return { tallyFractions }
+
+            if (votesByTract[0][0].pairwiseTallyFractions !== undefined) {
+                // pwtf - pairwise tally fractions
+                const pwtf = districtPairwiseTallyFractions(votesByTract, cen, numCans)
+                votes.pairwiseTallyFractions = pwtf
+            }
+            if (votesByTract[0][0].rankingTallyFractions !== undefined) {
+                // vrtf - votes ranked tally fractions
+                const vrtf = districtRankingTallyFractions(votesByTract, cen)
+                votes.rankingTallyFractions = vrtf.rankingTallyFractions
+                votes.cansRankedAll = vrtf.cansRankedAll
+            }
+            return votes
         })
         return votesByDistrict
+    }
+
+    function districtTallyFractions(votesByTract, cen, numCans) {
+        // sum tallyFractions
+        const totals = Array(numCans).fill(0)
+        for (let j = 0; j < cen.length; j++) {
+            const [gx, gy, gf] = cen[j]
+            const { tallyFractions } = votesByTract[gx][gy]
+            for (let k = 0; k < numCans; k++) {
+                totals[k] += tallyFractions[k] * gf
+            }
+        }
+        const norm = 1 / totals.reduce((p, c) => p + c)
+        const tallyFractions = totals.map((t) => t * norm)
+        return tallyFractions
+    }
+
+    function districtPairwiseTallyFractions(votesByTract, cen, numCans) {
+        // sum pairwiseTallyFractions
+        const pTotals = Array(numCans)
+        for (let k = 0; k < numCans; k++) {
+            pTotals[k] = Array(numCans).fill(0)
+        }
+        for (let j = 0; j < cen.length; j++) {
+            const [gx, gy, gf] = cen[j]
+            const { pairwiseTallyFractions } = votesByTract[gx][gy]
+            for (let i = 0; i < numCans; i++) {
+                for (let k = 0; k < numCans; k++) {
+                    pTotals[i][k] += pairwiseTallyFractions[i][k] * gf
+                }
+            }
+        }
+        const pNorm = 1 / (pTotals[0][1] + pTotals[1][0]) // sum wins and losses
+        const pairwiseTallyFractions = pTotals.map((row) => row.map((t) => t * pNorm))
+        return pairwiseTallyFractions
+    }
+
+    function districtRankingTallyFractions(votesByTract, cen) {
+        // concatenate rankingTallyFractions
+        let rankingTallyFractionsAll = []
+        let cansRankedAll2 = []
+
+        let gfSum = 0
+        for (let j = 0; j < cen.length; j++) {
+            const [, , gf] = cen[j]
+            gfSum += gf
+        }
+        const gfNorm = 1 / gfSum
+
+        for (let j = 0; j < cen.length; j++) {
+            const [gx, gy, gf] = cen[j]
+            gfSum += gf
+            const { rankingTallyFractions, cansRankedAll } = votesByTract[gx][gy]
+            const rankingTallyFractionsNorm = rankingTallyFractions
+                .map((x) => x * gf * gfNorm)
+            rankingTallyFractionsAll = rankingTallyFractionsAll
+                .concat(rankingTallyFractionsNorm)
+            cansRankedAll2 = cansRankedAll2.concat(cansRankedAll)
+        }
+        return {
+            rankingTallyFractions: rankingTallyFractionsAll,
+            cansRankedAll: cansRankedAll2,
+        }
     }
 
     // Show wins across all districts for each candidate
@@ -147,7 +287,7 @@ export default function ElectionGeo(election) {
         // make a histogram of allocation
         const numCandidates = canList.length
         const allocation = Array(numCandidates).fill(0)
-        if (election.countVotes.checkElectionType() === 'singleWinner') {
+        if (election.socialChoice.checkElectionType() === 'singleWinner') {
             const iWinners = resultsByDistrict.map((electionResults) => electionResults.iWinner)
             iWinners.forEach((iWinner) => {
                 allocation[iWinner] += 1

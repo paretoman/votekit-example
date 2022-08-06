@@ -123,3 +123,30 @@ export function clamp(value, min, max) {
     if (value > max) return max
     return value
 }
+
+export function copyArrayShallow(a) {
+    const n = a.length
+    const b = Array(n)
+    for (let i = 0; i < n; i++) {
+        b[i] = a[i]
+    }
+    return b
+}
+
+export function copyArrayShallow2(a) {
+    const n = a.length
+    const b = Array(n)
+    for (let i = 0; i < n; i++) {
+        const m = a[i].length
+        b[i] = Array(m)
+        for (let k = 0; k < m; k++) {
+            b[i][k] = a[i][k]
+        }
+    }
+    return b
+}
+
+export function copyObjectShallow(a) {
+    const b = { ...a }
+    return b
+}

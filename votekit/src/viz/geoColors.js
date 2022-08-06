@@ -1,4 +1,6 @@
-import colorBlend, { toRGBA } from './colorBlend.js'
+/** @module */
+
+import colorBlender, { rgbToString } from './colorBlender.js'
 
 export default function geoColors(geoElectionResults, candidateSimList, sim) {
     const {
@@ -22,12 +24,12 @@ export default function geoColors(geoElectionResults, candidateSimList, sim) {
 
 function colorTracts(resultsByTract, canList) {
     // get color
-    const colorSet = canList.map((can) => can.color)
+    const colorSet = canList.map((can) => can.colorRGBA)
     const colorByTract = resultsByTract.map(
         (row) => row.map(
             (electionResults) => {
                 const { tallyFractions } = electionResults.votes
-                const color = toRGBA(colorBlend(tallyFractions, colorSet))
+                const color = colorBlender(tallyFractions, colorSet)
                 return color
             },
         ),
@@ -38,18 +40,18 @@ function colorTracts(resultsByTract, canList) {
 function colorDistrictWins(resultsByDistrict, canList, sim) {
     // calculate color for win map
     let colorOfWinsByDistrict
-    if (sim.election.countVotes.checkElectionType() === 'singleWinner') {
+    if (sim.election.socialChoice.checkElectionType() === 'singleWinner') {
         colorOfWinsByDistrict = resultsByDistrict.map(
             (electionResults) => electionResults.winner.color,
         )
     } else {
-        const colorSet = canList.map((can) => can.color)
+        const colorSet = canList.map((can) => can.colorRGBA)
         colorOfWinsByDistrict = resultsByDistrict.map(
             (electionResults) => {
                 const { allocation } = electionResults
                 const sum = allocation.reduce((p, c) => p + c)
                 const fractions = allocation.map((x) => x / sum)
-                const color = colorBlend(fractions, colorSet)
+                const color = rgbToString(colorBlender(fractions, colorSet))
                 return color
             },
         )
@@ -57,14 +59,18 @@ function colorDistrictWins(resultsByDistrict, canList, sim) {
     return colorOfWinsByDistrict
 }
 
-/** Update color for each district, based on votes for each candidate.
-     * Blend candidate colors in proportion to their votes.
-     */
+/**
+ * Update color for each district, based on votes for each candidate.
+ * Blend candidate colors in proportion to their votes.
+ * @param {Object[]} resultsByDistrict - An array of electionResults, indexed by district.
+ * @param {Candidate[]} canList - An array of Candidate objects.
+ * @returns {String[]} - List of color strings indexed by district.
+ */
 function colorDistrictVote(resultsByDistrict, canList) {
     const colorOfVoteByDistrict = resultsByDistrict.map((electionResults) => {
         const { tallyFractions } = electionResults.votes
-        const colorSet = canList.map((can) => can.color)
-        const color = colorBlend(tallyFractions, colorSet)
+        const colorSet = canList.map((can) => can.colorRGBA)
+        const color = rgbToString(colorBlender(tallyFractions, colorSet))
         return color
     })
     return colorOfVoteByDistrict
