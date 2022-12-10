@@ -1,5 +1,6 @@
 /** @module */
 
+import jupyterUpdate from '../environments/jupyter.js'
 import { range } from '../utilities/jsHelpers.js'
 
 /**
@@ -12,33 +13,38 @@ import { range } from '../utilities/jsHelpers.js'
  * @param {Election} election
  * @constructor
  */
-export default function ElectionGeo(election) {
+export default function ElectionGeo(election, voterGeo) {
     const self = this
 
     const optionCast = { usr: 32 }
 
-    self.runElectionSim = (voterGeoList, candidateSimList, changes) => {
+    self.runElectionSim = (voterShapeList, candidateList, changes) => {
         if (changes.checkNone()) return { error: 'No Changes' }
 
-        const canList = candidateSimList.getCandidates()
+        const canList = candidateList.getCandidates()
 
-        const geoElectionResults = self.runElection2(voterGeoList, canList)
+        const geoElectionResults = self.runElectionGeo(voterShapeList, canList)
 
         return geoElectionResults
     }
 
-    self.runElection2 = (voterGeoList, canList) => {
-        if (voterGeoList.getVoterSims().length === 0) return { error: 'no voters' }
+    self.runElectionGeo = (voterShapeList, canList) => {
+        if (voterShapeList.getVoterShapes().length === 0) return { error: 'no voters' }
         if (canList.length === 0) return { error: 'no candidates' }
 
-        const votesByTract = castVotesByTract(voterGeoList, canList)
+        const parties = election.getParties(canList)
 
-        const resultsStatewide = countStatewideElection(votesByTract, canList)
+        const votesByTract = castVotesByTract(canList, parties)
 
-        const resultsByTract = countTractElections(votesByTract, canList)
+        const resultsStatewide = countStatewideElection(votesByTract, canList, parties)
 
-        const resultsByDistrict = countDistrictElections(votesByTract, canList, voterGeoList)
+        const resultsByTract = countTractElections(votesByTract, canList, parties)
+
+        // eslint-disable-next-line max-len
+        const resultsByDistrict = countDistrictElections(votesByTract, canList, parties)
         const allocation = sumAllocations(resultsByDistrict, canList)
+
+        jupyterUpdate({ votesByTract })
 
         const geoElectionResults = {
             resultsStatewide,
@@ -49,12 +55,12 @@ export default function ElectionGeo(election) {
         return geoElectionResults
     }
 
-    function castVotesByTract(voterGeoList, canList) {
-        const { voterGroupsByTract } = voterGeoList
+    function castVotesByTract(canList, parties) {
+        const { voterGroupsByTract } = voterGeo
 
         const votesByTract = voterGroupsByTract.map(
             (row) => row.map(
-                (voterGroups) => election.castVotes(voterGroups, canList, optionCast),
+                (voterGroups) => election.castVotes(voterGroups, canList, parties, optionCast),
             ),
         )
         return votesByTract
@@ -63,11 +69,13 @@ export default function ElectionGeo(election) {
     /** Show tallies over all the districts
      * Find statewide support for candidates (parties).
      */
-    function countStatewideElection(votesByTract, canList) {
+    function countStatewideElection(votesByTract, canList, parties) {
         const numCans = canList.length
         const allVotes = combineVotes(votesByTract, numCans)
 
-        const resultsStatewide = election.socialChoice.run(canList, allVotes)
+        jupyterUpdate({ allVotes })
+
+        const resultsStatewide = election.socialChoice.run(canList, allVotes, parties)
         return resultsStatewide
     }
 
@@ -84,11 +92,17 @@ export default function ElectionGeo(election) {
             const pwtf = statewidePairwiseTallyFractions(votesByTract, numCans)
             votes.pairwiseTallyFractions = pwtf
         }
-        if (votesByTract[0][0].rankingTallyFractions !== undefined) {
+        if (votesByTract[0][0].cansByRank !== undefined) {
             // vrtf - votes ranked tally fractions
             const vrtf = statewideRankingTallyFractions(votesByTract)
-            votes.rankingTallyFractions = vrtf.rankingTallyFractions
-            votes.cansRankedAll = vrtf.cansRankedAll
+            votes.votePop = vrtf.votePop
+            votes.cansByRank = vrtf.cansByRank
+        }
+        if (votesByTract[0][0].scoreVotes !== undefined) {
+            // vstf - votes score tally fractions
+            const vstf = statewideScoreTallyFractions(votesByTract)
+            votes.votePop = vstf.votePop
+            votes.scoreVotes = vstf.scoreVotes
         }
         return votes
     }
@@ -135,57 +149,83 @@ export default function ElectionGeo(election) {
     }
 
     function statewideRankingTallyFractions(votesByTract) {
-        // concatenate rankingTallyFractions
-        let rankingTallyFractionsAll = []
-        let cansRankedAll2 = []
+        // concatenate cansByRank
+        let votePopAll = []
+        let cansByRankAll = []
         votesByTract.forEach(
             (row) => row.forEach(
                 (votes) => {
-                    const { rankingTallyFractions, cansRankedAll } = votes
-                    rankingTallyFractionsAll = rankingTallyFractionsAll
-                        .concat(rankingTallyFractions)
-                    cansRankedAll2 = cansRankedAll2.concat(cansRankedAll)
+                    const { votePop, cansByRank } = votes
+                    votePopAll = votePopAll
+                        .concat(votePop)
+                    cansByRankAll = cansByRankAll.concat(cansByRank)
                 },
             ),
         )
         const numRows = votesByTract.length
         const numCols = votesByTract[0].length
         const rNorm = 1 / (numRows * numCols)
-        rankingTallyFractionsAll = rankingTallyFractionsAll.map((t) => t * rNorm)
+        votePopAll = votePopAll.map((t) => t * rNorm)
         return {
-            rankingTallyFractions: rankingTallyFractionsAll,
-            cansRankedAll: cansRankedAll2,
+            votePop: votePopAll,
+            cansByRank: cansByRankAll,
+        }
+    }
+
+    function statewideScoreTallyFractions(votesByTract) {
+        // concatenate cansByRank
+        let votePopAll = []
+        let scoreVoteAll = []
+        votesByTract.forEach(
+            (row) => row.forEach(
+                (votes) => {
+                    const { votePop, scoreVotes } = votes
+                    votePopAll = votePopAll
+                        .concat(votePop)
+                    scoreVoteAll = scoreVoteAll.concat(scoreVotes)
+                },
+            ),
+        )
+        const numRows = votesByTract.length
+        const numCols = votesByTract[0].length
+        const rNorm = 1 / (numRows * numCols)
+        votePopAll = votePopAll.map((t) => t * rNorm)
+        return {
+            votePop: votePopAll,
+            scoreVotes: scoreVoteAll,
         }
     }
 
     /** Visualize voter demographics according to votes for candidates within a tract.
      * Hold mini-elections within a tract.
      */
-    function countTractElections(votesByTract, canList) {
+    function countTractElections(votesByTract, canList, parties) {
         const resultsByTract = votesByTract.map(
             (row) => row.map(
-                (votes) => election.socialChoice.run(canList, votes),
+                (votes) => election.socialChoice.run(canList, votes, parties),
             ),
         )
         return resultsByTract
     }
 
     /** Run separate elections in each district. */
-    function countDistrictElections(votesByTract, canList, voterGeoList) {
+    function countDistrictElections(votesByTract, canList, parties) {
         // Loop through districts.
         // Find who won.
 
-        const votesByDistrict = combineVotesByDistrict(votesByTract, canList, voterGeoList)
+        const votesByDistrict = combineVotesByDistrict(votesByTract, canList)
+
+        jupyterUpdate({ votesByDistrict })
 
         const resultsByDistrict = votesByDistrict.map(
-            (votes) => election.socialChoice.run(canList, votes),
+            (votes) => election.socialChoice.run(canList, votes, parties),
         )
         return resultsByDistrict
     }
 
-    function combineVotesByDistrict(votesByTract, canList, voterGeoList) {
-        const { census } = voterGeoList.districtMaker
-        const { nd } = voterGeoList
+    function combineVotesByDistrict(votesByTract, canList) {
+        const { census } = voterGeo.districtMaker
+        const { nd } = voterGeo
         const numCans = canList.length
 
         // loop through districts
@@ -208,11 +248,17 @@ export default function ElectionGeo(election) {
                 const pwtf = districtPairwiseTallyFractions(votesByTract, cen, numCans)
                 votes.pairwiseTallyFractions = pwtf
             }
-            if (votesByTract[0][0].rankingTallyFractions !== undefined) {
+            if (votesByTract[0][0].cansByRank !== undefined) {
                 // vrtf - votes ranked tally fractions
                 const vrtf = districtRankingTallyFractions(votesByTract, cen)
-                votes.rankingTallyFractions = vrtf.rankingTallyFractions
-                votes.cansRankedAll = vrtf.cansRankedAll
+                votes.votePop = vrtf.votePop
+                votes.cansByRank = vrtf.cansByRank
+            }
+            if (votesByTract[0][0].scoreVotes !== undefined) {
+                // vstf - votes score tally fractions
+                const vstf = districtScoreTallyFractions(votesByTract, cen)
+                votes.votePop = vstf.votePop
+                votes.scoreVotes = vstf.scoreVotes
             }
             return votes
         })
@@ -255,9 +301,9 @@ export default function ElectionGeo(election) {
     }
 
     function districtRankingTallyFractions(votesByTract, cen) {
-        // concatenate rankingTallyFractions
-        let rankingTallyFractionsAll = []
-        let cansRankedAll2 = []
+        // concatenate cansByRank
+        let votePopAll = []
+        let cansByRankAll = []
 
         let gfSum = 0
         for (let j = 0; j < cen.length; j++) {
@@ -269,16 +315,44 @@ export default function ElectionGeo(election) {
         for (let j = 0; j < cen.length; j++) {
             const [gx, gy, gf] = cen[j]
             gfSum += gf
-            const { rankingTallyFractions, cansRankedAll } = votesByTract[gx][gy]
-            const rankingTallyFractionsNorm = rankingTallyFractions
+            const { votePop, cansByRank } = votesByTract[gx][gy]
+            const votePopNorm = votePop
                 .map((x) => x * gf * gfNorm)
-            rankingTallyFractionsAll = rankingTallyFractionsAll
-                .concat(rankingTallyFractionsNorm)
-            cansRankedAll2 = cansRankedAll2.concat(cansRankedAll)
+            votePopAll = votePopAll
+                .concat(votePopNorm)
+            cansByRankAll = cansByRankAll.concat(cansByRank)
         }
         return {
-            rankingTallyFractions: rankingTallyFractionsAll,
-            cansRankedAll: cansRankedAll2,
+            votePop: votePopAll,
+            cansByRank: cansByRankAll,
+        }
+    }
+
+    function districtScoreTallyFractions(votesByTract, cen) {
+        // concatenate scoreVotes
+        let votePopAll = []
+        let scoreVotesAll = []
+
+        let gfSum = 0
+        for (let j = 0; j < cen.length; j++) {
+            const [, , gf] = cen[j]
+            gfSum += gf
+        }
+        const gfNorm = 1 / gfSum
+
+        for (let j = 0; j < cen.length; j++) {
+            const [gx, gy, gf] = cen[j]
+            gfSum += gf
+            const { votePop, scoreVotes } = votesByTract[gx][gy]
+            const votePopNorm = votePop
+                .map((x) => x * gf * gfNorm)
+            votePopAll = votePopAll
+                .concat(votePopNorm)
+            scoreVotesAll = scoreVotesAll.concat(scoreVotes)
+        }
+        return {
+            votePop: votePopAll,
+            scoreVotes: scoreVotesAll,
         }
     }
 
@@ -302,10 +376,5 @@ export default function ElectionGeo(election) {
             )
         }
         return allocation
-    }
-
-    self.testVoteES = (voterTest, candidateSimList) => {
-        const vote = election.testVoteE(voterTest, candidateSimList)
-        return vote
     }
 }

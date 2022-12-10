@@ -22,20 +22,22 @@ export default function CastScoreSummer1DGrid(canGeoms) {
         // find vote
         const gridLength = grid.x.length
         const voteSet = Array(gridLength)
+        const weightSet = Array(gridLength)
         for (let i = 0; i < gridLength; i++) {
             const xi = grid.x[i]
             const testVoter = { x: xi }
-            const vote = castScoreTestVote(canGeoms, testVoter, 1)
+            const vote = castScoreTestVote({ canGeoms, voterGeom: testVoter, dimensions: 1 })
             voteSet[i] = vote
             const { tallyFractions } = vote
             const weight = findWeight(voterGeom, xi)
+            weightSet[i] = weight
             totalArea += weight
             for (let k = 0; k < n; k++) {
                 area[k] += tallyFractions[k] * weight
             }
         }
         return {
-            grid, voteSet, area, totalArea,
+            grid, voteSet, weightSet, area, totalArea,
         }
     }
 }

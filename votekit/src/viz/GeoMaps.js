@@ -1,24 +1,29 @@
 /** @module */
 
+import DistrictDraw from './DistrictDraw.js'
 import geoColors from './geoColors.js'
 import NoiseImage from './NoiseImage.js'
 
 /**
  * Show votes
- * @param {VoterGeoList} voterGeoList
+ * @param {VoterGeo} voterGeo
  * @param {Screen} screen
  * @constructor
  */
-export default function GeoMaps(voterGeoList, candidateSimList, screen, sim) {
+export default function GeoMaps(voterGeo, candidateViewList, screen, sim) {
     const self = this
 
+    const { districtMaker } = voterGeo
+
+    self.districtDraw = new DistrictDraw(screen, districtMaker)
+
     // Code that handles making images of geographic noise.
-    self.noiseImage = new NoiseImage(voterGeoList.nx, voterGeoList.ny, screen)
+    self.noiseImage = new NoiseImage(voterGeo.nx, voterGeo.ny, screen)
 
     // Update //
 
     self.update = (geoElectionResults) => {
-        const gc = geoColors(geoElectionResults, candidateSimList, sim)
+        const gc = geoColors(geoElectionResults, candidateViewList, sim)
         const { colorByTract, colorOfVoteByDistrict, colorOfWinsByDistrict } = gc
         self.colorOfVoteByDistrict = colorOfVoteByDistrict
         self.winnerColors = colorOfWinsByDistrict
@@ -41,22 +46,22 @@ export default function GeoMaps(voterGeoList, candidateSimList, screen, sim) {
     // Render census tract votes.
     self.renderTractVotes = () => {
         self.noiseImage.render(geoMapWidth, geoMapHeight)
-        voterGeoList.districtMaker.renderVoronoi(geoMapWidth, geoMapHeight)
+        self.districtDraw.renderVoronoi(geoMapWidth, geoMapHeight)
     }
     // Render district wins.
     self.renderDistrictWins = () => {
-        const { renderVoronoiColors } = voterGeoList.districtMaker
+        const { renderVoronoiColors } = self.districtDraw
         renderVoronoiColors(200, 0, geoMapWidth, geoMapHeight, self.winnerColors)
     }
     // render district votes.
     self.renderDistrictVotes = () => {
-        const { renderVoronoiColors } = voterGeoList.districtMaker
+        const { renderVoronoiColors } = self.districtDraw
         renderVoronoiColors(100, 0, geoMapWidth, geoMapHeight, self.colorOfVoteByDistrict)
     }
 
     /** Draw dots to represent the political diversity across census tracts. */
     self.renderPolicyNoise = () => {
-        voterGeoList.voterGroupsByTract.forEach((row) => {
+        voterGeo.voterGroupsByTract.forEach((row) => {
             row.forEach((cell) => {
                 cell.forEach((voterGroup) => {
                     if (sim.election.dimensions === 1) {
@@ -85,6 +90,7 @@ export default function GeoMaps(voterGeoList, candidateSimList, screen, sim) {
         canvas.height = 10
         offCtx.beginPath()
         offCtx.fillStyle = '#555'
+
         offCtx.arc(5, 5, 1, 0, 2 * Math.PI)
         offCtx.fill()
     }

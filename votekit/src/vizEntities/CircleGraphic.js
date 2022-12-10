@@ -15,7 +15,7 @@ import { Tween } from '../lib/snowpack/build/snowpack/pkg/@tweenjs/tweenjs.js'
  * @param {Screen} screen - something with .ctx to draw to.
  * @constructor
  */
-export default function CircleGraphic(parent, r, screen) {
+export default function CircleGraphic(parent, entity, r, screen) {
     const self = this
 
     self.r = r
@@ -34,8 +34,8 @@ export default function CircleGraphic(parent, r, screen) {
 
     // Graphics component
     self.render = function () {
-        const { fctx } = screen
-        const { color } = parent
+        const { fctx, darkMode } = screen
+        const { color } = entity
 
         fctx.save()
 
@@ -45,11 +45,12 @@ export default function CircleGraphic(parent, r, screen) {
 
         // handle
 
-        if (parent.exists === 0) {
+        if (entity.exists === 0) {
             fctx.globalAlpha = 0.2
         }
         fctx.beginPath()
         fctx.fillStyle = color
+        if (darkMode) fctx.strokeStyle = 'white'
         fctx.arc(parent.x, parent.y, self.r, 0, 2 * Math.PI)
         fctx.fill()
         fctx.stroke()

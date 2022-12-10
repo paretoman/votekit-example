@@ -13,13 +13,13 @@ export default function ElectionOne(election) {
 
     const optionCast = { usr: 4 }
 
-    self.runElectionSim = function (oneVoters, candidateSimList, changes) {
+    self.runElectionSim = function (voterShapeList, candidateList, changes) {
         if (changes.checkNone()) return { error: 'No Changes' }
 
         // Voters cast votes for candidates.
         // There is also a separate graphical representation in Voronoi2D.js
-        const canList = candidateSimList.getCandidates()
-        const voterShapes = oneVoters.getVoterShapes()
+        const canList = candidateList.getCandidates()
+        const voterShapes = voterShapeList.getVoterShapes()
 
         if (voterShapes.length === 0) return { error: 'No Voters' }
         if (canList.length === 0) return { error: 'No Candidates' }
@@ -27,10 +27,5 @@ export default function ElectionOne(election) {
         const electionResults = election.runElection(voterShapes, canList, optionCast)
 
         return electionResults
-    }
-
-    self.testVoteES = (voterTest, candidateSimList) => {
-        const vote = election.testVoteE(voterTest, candidateSimList)
-        return vote
     }
 }

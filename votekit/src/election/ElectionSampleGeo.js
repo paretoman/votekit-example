@@ -10,7 +10,7 @@
  * @param {Election} election
  * @constructor
  */
-export default function ElectionSampleGeo(election, electionGeo) {
+export default function ElectionSampleGeo(election, electionGeo, voterGeo) {
     const self = this
 
     // const optionCast = { usr: 16 }
@@ -19,12 +19,12 @@ export default function ElectionSampleGeo(election, electionGeo) {
 
     let points = []
 
-    self.update = function (voterSimList, candidateSimList, changes, dimensions) {
+    self.update = function (voterShapeList, candidateDnList, cDnSampler, changes, dimensions) {
         if (changes.checkNone() === false) {
             self.startSim()
         }
 
-        const addResult = self.addSim(voterSimList, candidateSimList, dimensions)
+        const addResult = self.addSim(voterShapeList, candidateDnList, cDnSampler, dimensions)
         return addResult
     }
 
@@ -32,11 +32,11 @@ export default function ElectionSampleGeo(election, electionGeo) {
         points = []
     }
 
-    self.addSim = function (voterSimList, sampleCandidates, dimensions) {
+    self.addSim = function (voterShapeList, candidateDnList, cDnSampler, dimensions) {
         // add more points
 
-        if (voterSimList.getVoterShapes().length === 0) return { pointsChanged: false }
-        if (sampleCandidates.getCandidateDistributions().length === 0) {
+        if (voterShapeList.getVoterShapes().length === 0) return { pointsChanged: false }
+        if (candidateDnList.getCandidateDistributions().length === 0) {
             return { pointsChanged: false }
         }
 
@@ -49,7 +49,7 @@ export default function ElectionSampleGeo(election, electionGeo) {
 
         // number of new points
         const { seats } = election.socialChoice
-        const { nd } = voterSimList
+        const { nd } = voterGeo
         const nnp = seats * ns * nd
         const newPoints = Array(nnp)
         let q = 0
@@ -60,18 +60,14 @@ export default function ElectionSampleGeo(election, electionGeo) {
             const canList = []
             for (let k = 0; k < nk; k++) {
                 // sample a point from the distribution of candidates
-                const point = sampleCandidates.sampler.samplePoint()
+                const point = cDnSampler.samplePoint()
 
                 // make a candidate
-                if (dimensions === 1) {
-                    canList.push({ shape1: point })
-                } else {
-                    canList.push({ shape2: point })
-                }
+                canList.push(point)
             }
 
             // find winner position
-            const electionResults = electionGeo.runElection2(voterSimList, canList)
+            const electionResults = electionGeo.runElectionGeo(voterShapeList, canList)
 
             const { resultsByDistrict } = electionResults
             const nDistricts = resultsByDistrict.length

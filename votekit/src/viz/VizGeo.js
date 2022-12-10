@@ -6,30 +6,29 @@ import VoterRender2D from './VoterRender2D.js'
 
 /**
  * Show votes
- * @param {VoterGeoList} voterGeoList
- * @param {CandidateSimList} candidateSimList
+ * @param {VoterGeo} voterGeo
+ * @param {VoterViewList} voterViewList
+ * @param {CandidateViewList} candidateViewList
  * @param {Screen} screen
  * @param {Sim} sim
  * @constructor
  */
-export default function VizGeo(voterGeoList, candidateSimList, screen, sim) {
+export default function VizGeo(voterGeo, voterViewList, candidateViewList, screen, sim) {
     const self = this
 
-    const geoMaps = new GeoMaps(voterGeoList, candidateSimList, screen, sim)
+    const geoMaps = new GeoMaps(voterGeo, candidateViewList, screen, sim)
     let flagNoRender = false
 
     const { dimensions } = sim.election
     const VoterRenderer = (dimensions === 1) ? VoterRender1D : VoterRender2D
-    voterGeoList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
+    voterViewList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
 
     self.enter = () => {
         screen.showMaps()
     }
     self.exit = () => {
         screen.hideMaps()
-        // clean up fractions
-        const fillUndefined = Array(candidateSimList.numSimCandidates()).fill(undefined)
-        candidateSimList.setCandidateWins(fillUndefined)
+        candidateViewList.unsetCandidateWins() // clean up fractions
     }
 
     self.update = function (geoElectionResults) {
@@ -43,8 +42,8 @@ export default function VizGeo(voterGeoList, candidateSimList, screen, sim) {
         geoMaps.update(geoElectionResults)
 
         const { resultsStatewide, allocation } = geoElectionResults
-        candidateSimList.setCandidateWins(allocation)
-        candidateSimList.setCandidateFractions(resultsStatewide.votes.tallyFractions)
+        candidateViewList.setCandidateWins(allocation)
+        candidateViewList.setCandidateFractions(resultsStatewide.votes.tallyFractions)
     }
 
     self.render = function () {
@@ -52,6 +51,6 @@ export default function VizGeo(voterGeoList, candidateSimList, screen, sim) {
 
         geoMaps.render()
 
-        voterGeoList.render()
+        voterViewList.render()
     }
 }

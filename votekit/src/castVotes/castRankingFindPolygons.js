@@ -8,8 +8,8 @@ import splitConvex from './splitConvex.js'
  * Make polygons for each group of voters that gives a unique ranking.
  * Divide a starting polygon into smaller polygons.
  * Use a dividing line for each pair of candidates.
- * @param {VoterGroup} voterGeom
- * @param {CandidateSimList} canGeoms
+ * @param {Object} voterGeom
+ * @param {Object[]} canGeoms
  * @constructor
  */
 export default function castRankingFindPolygons(voterGeom, canGeoms) {
@@ -92,9 +92,8 @@ export default function castRankingFindPolygons(voterGeom, canGeoms) {
  * @param {Object} voterGeom
  */
 function makeCircle(voterGeom) {
-    const r = voterGeom.w / 2
-    const { x } = voterGeom
-    const { y } = voterGeom
+    const { x, y, w } = voterGeom
+    const r = w / 2
     const n = 100
     const circle = Array(n)
     for (let i = 0; i < n; i++) {

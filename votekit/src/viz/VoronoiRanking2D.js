@@ -6,11 +6,11 @@ import colorBlender, { rgbToString } from './colorBlender.js'
 /**
  * Draw Voronoi cells to show votes.
  * @param {VoterGroup} voterGroup
- * @param {CandidateSimList} candidateSimList
+ * @param {CandidateViewList} candidateViewList
  * @param {Screen} screen
  * @constructor
  */
-export default function VoronoiRanking2D(voterGroup, candidateSimList, screen) {
+export default function VoronoiRanking2D(voterGroup, candidateViewList, screen) {
     const self = this
 
     let canList
@@ -21,7 +21,7 @@ export default function VoronoiRanking2D(voterGroup, candidateSimList, screen) {
 
         let ranking
         if (cellData === undefined) {
-            canList = candidateSimList.getCandidates()
+            canList = candidateViewList.getCandidates()
             const canGeoms = canList.map((can) => can.shape2)
             const voterGeom = voterGroup.shape2
             const cd = castRankingFindPolygons(voterGeom, canGeoms)
@@ -32,7 +32,7 @@ export default function VoronoiRanking2D(voterGroup, candidateSimList, screen) {
             cells = cellData.cells
         }
 
-        canList = candidateSimList.getCandidates()
+        canList = candidateViewList.getCandidates()
 
         const n = canList.length
         const cn = cells.length
@@ -46,6 +46,7 @@ export default function VoronoiRanking2D(voterGroup, candidateSimList, screen) {
 
     self.render = function () {
         const { ctx } = screen
+        const { x, y, w } = voterGroup.shape2
 
         ctx.save()
 
@@ -62,7 +63,7 @@ export default function VoronoiRanking2D(voterGroup, candidateSimList, screen) {
         // border
         ctx.strokeStyle = '#222'
         ctx.beginPath()
-        ctx.arc(voterGroup.x, voterGroup.y, voterGroup.shape2.w * 0.5, 0, 2 * Math.PI)
+        ctx.arc(x, y, w * 0.5, 0, 2 * Math.PI)
         ctx.stroke()
 
         ctx.restore()

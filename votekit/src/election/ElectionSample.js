@@ -18,25 +18,27 @@ export default function ElectionSample(election) {
     const maxPoints = 5000
 
     let points = []
+    let partyWins
 
-    self.update = function (voterSimList, candidateDnSimList, changes, dimensions) {
+    self.update = function (voterShapeList, candidateDnList, cDnSampler, changes, dimensions) {
         if (changes.checkNone() === false) {
             self.startSim()
         }
 
-        const addResult = self.addSim(voterSimList, candidateDnSimList, dimensions)
+        const addResult = self.addSim(voterShapeList, candidateDnList, cDnSampler, dimensions)
         return addResult
     }
 
     self.startSim = function () {
         points = []
+        partyWins = Array(10).fill(0) // TODO: Use number of parties
     }
 
-    self.addSim = function (voterSimList, candidateDnSimList, dimensions) {
+    self.addSim = function (voterShapeList, candidateDnList, cDnSampler, dimensions) {
         // add more points
 
-        if (voterSimList.getVoterShapes().length === 0) return { pointsChanged: false }
-        if (candidateDnSimList.getCandidateDistributions().length === 0) {
+        if (voterShapeList.getVoterShapes().length === 0) return { pointsChanged: false }
+        if (candidateDnList.getCandidateDistributions().length === 0) {
             return { pointsChanged: false }
         }
 
@@ -53,7 +55,7 @@ export default function ElectionSample(election) {
         const newPoints = Array(nnp)
         let q = 0
 
-        const voterShapes = voterSimList.getVoterShapes()
+        const voterShapes = voterShapeList.getVoterShapes()
 
         for (let i = 0; i < ns; i++) {
             // choose a number of candidates
@@ -61,14 +63,10 @@ export default function ElectionSample(election) {
             const canList = []
             for (let k = 0; k < nk; k++) {
                 // sample a point from the distribution of candidates
-                const point = candidateDnSimList.sampler.samplePoint()
+                const point = cDnSampler.samplePoint()
 
                 // make a candidate
-                if (dimensions === 1) {
-                    canList.push({ shape1: point })
-                } else {
-                    canList.push({ shape2: point })
-                }
+                canList.push(point)
             }
 
             // find winner position
@@ -79,6 +77,7 @@ export default function ElectionSample(election) {
 
                 // record point
                 const winPoint = (dimensions === 1) ? winner.shape1 : winner.shape2
+                partyWins[winner.party] += 1
                 points.push(winPoint)
                 newPoints[i] = winPoint
             } else {
@@ -106,6 +105,9 @@ export default function ElectionSample(election) {
                             }
                         }
                         // record point
+
+                        // calculate fractions of wins
+                        partyWins[can.party] += 1
                         points.push(winPoint)
                         newPoints[q] = winPoint
                         q += 1
@@ -113,6 +115,10 @@ export default function ElectionSample(election) {
                 }
             }
         }
-        return { pointsChanged: true, newPoints, points }
+
+        const partyWinFraction = partyWins.map((x) => x / points.length)
+        return {
+            pointsChanged: true, newPoints, points, partyWinFraction,
+        }
     }
 }

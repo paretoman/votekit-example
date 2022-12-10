@@ -13,7 +13,7 @@ import CastRankingSummer1DIntervals from './CastRankingSummer1DIntervals.js'
  * For 1D, an array of objects: {x,w,densityProfile}.
  * @returns votes, an object
  */
-export default function castRanking(canGeoms, voterGeoms, dimensions) {
+export default function castRanking({ canGeoms, voterGeoms, dimensions }) {
     const summer = (dimensions === 1)
         ? new CastRankingSummer1DIntervals(canGeoms)
         : new CastRankingSummer2DPolygons(canGeoms)
@@ -22,8 +22,8 @@ export default function castRanking(canGeoms, voterGeoms, dimensions) {
 
     // get fraction of votes for each candidate so we can summarize results
     let areaAll = []
-    let rankingAll = []
-    let cansRankedAll = []
+    let rankingVotes = []
+    let cansByRank = []
     const firstPreferences = Array(n).fill(0)
     let totalAreaAll = 0
     const cellData = []
@@ -33,12 +33,12 @@ export default function castRanking(canGeoms, voterGeoms, dimensions) {
         const weight = ((voterGeom.weight === undefined) ? 1 : voterGeom.weight)
 
         const {
-            ranking, cansRanked, area, totalArea, cellDatum,
+            rankings, cansRanked, area, totalArea, cellDatum,
         } = summer.sumArea(voterGeom, weight)
 
         areaAll = areaAll.concat(area)
-        rankingAll = rankingAll.concat(ranking)
-        cansRankedAll = cansRankedAll.concat(cansRanked)
+        rankingVotes = rankingVotes.concat(rankings)
+        cansByRank = cansByRank.concat(cansRanked)
         totalAreaAll += totalArea
         cellData.push(cellDatum)
 
@@ -50,11 +50,11 @@ export default function castRanking(canGeoms, voterGeoms, dimensions) {
             }
         }
     })
-    const rankingTallyFractions = areaAll.map((x) => x / totalAreaAll)
+    const votePop = areaAll.map((x) => x / totalAreaAll)
     const tallyFractions = firstPreferences.map((x) => x / totalAreaAll)
 
     const votes = {
-        ranking: rankingAll, cansRankedAll, rankingTallyFractions, tallyFractions, cellData,
+        rankingVotes, cansByRank, votePop, tallyFractions, cellData,
     }
     return votes
 }

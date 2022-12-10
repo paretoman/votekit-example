@@ -1,6 +1,5 @@
 /** @module */
 
-// import GeoMaps from './GeoMaps.js'
 import { contourDensity } from '../lib/snowpack/build/snowpack/pkg/d3-contour.js'
 import { geoPath } from '../lib/snowpack/build/snowpack/pkg/d3-geo.js'
 import { range } from '../utilities/jsHelpers.js'
@@ -10,14 +9,12 @@ import VoterRender2D from './VoterRender2D.js'
 
 /**
  * Show Voters
- * @param {VoterSimList} voterSimList
+ * @param {VoterViewList} voterViewList
  * @param {screen} screen - draw to the screen
  * @constructor
  */
-export default function VizSampleDensity2D(voterSimList, candidateDnSimList, screen, changes, sim) {
+export default function VizSampleDensity2D(voterViewList, candidateDnViewList, screen, changes, sim) {
     const self = this
-
-    // const geoMaps = new GeoMaps(voterSimList, candidateDnSimList, screen, sim)
 
     // Candidates //
 
@@ -25,23 +22,23 @@ export default function VizSampleDensity2D(voterSimList, candidateDnSimList, scr
 
     // voter renderer factory //
     const VoterRenderer = (dimensions === 1) ? VoterRender1D : VoterRender2D
-    voterSimList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
-    candidateDnSimList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
+    voterViewList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
+    candidateDnViewList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
 
     self.update = function (addResult) {
-        const { pointsChanged, points } = addResult
+        const { pointsChanged, points, partyWinFraction } = addResult
 
         if (pointsChanged) {
             self.updatePoints(points)
+            candidateDnViewList.setCandidateDnWins(partyWinFraction)
         }
     }
 
     self.render = () => {
-        // geoMaps.renderPolicyNoise()
         self.renderCans()
 
-        voterSimList.render()
-        candidateDnSimList.render()
+        voterViewList.render()
+        candidateDnViewList.render()
     }
 
     const nThresholds = 20
@@ -58,7 +55,7 @@ export default function VizSampleDensity2D(voterSimList, candidateDnSimList, scr
     }
 
     self.renderCans = () => {
-        const { ctx } = screen
+        const { ctx, darkMode } = screen
         const gg = geoPath()
             .context(ctx)
 
@@ -69,7 +66,9 @@ export default function VizSampleDensity2D(voterSimList, candidateDnSimList, scr
         const alpha = 1
         const nd = densityData.length
         for (let i = 0; i < nd; i++) {
-            const co = 255 - i * (200 / nThresholds)
+            const col = 255 - i * (200 / nThresholds)
+            // 33 is #222, otherwise there is noise TODO: fix this workaround. Try to take out 33.
+            const co = (darkMode) ? 255 - col + 33 : col
             ctx.fillStyle = `rgba(${co},${co},${co}, ${alpha})`
             ctx.beginPath()
             gg(densityData[i])

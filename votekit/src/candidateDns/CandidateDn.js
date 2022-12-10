@@ -1,7 +1,5 @@
 /** @module */
 
-import tooltipForEntity from '../tooltips/tooltipForEntity.js'
-
 /**
  * This represents a spatial distribution of candidates.
  * A draggable handle handle provides draggable behavior.
@@ -17,13 +15,11 @@ import tooltipForEntity from '../tooltips/tooltipForEntity.js'
 export default function CandidateDistribution(
     shape2,
     shape1,
-    screen,
     candidateDnRegistrar,
     commander,
     changes,
     doLoad,
     candidateDnCommander,
-    sim,
 ) {
     const self = this
 
@@ -49,6 +45,7 @@ export default function CandidateDistribution(
                 shape1.densityProfile,
                 shape1.densityProfile,
             ),
+            candidateDnCommander.setForListSenders.party.command(id, [id], [id]),
         ]
         // Either load the commands because we don't want to create an item of history
         // Or do the commands because want to store an item in history, so that we can undo.
@@ -73,37 +70,19 @@ export default function CandidateDistribution(
     self.setAction.shape2p = (p) => {
         self.shape2.x = p.x
         self.shape2.y = p.y
-        if (sim.election.dimensions === 2) {
-            self.x = p.x
-            self.y = p.y
-        }
         changes.add(['draggables'])
     }
     self.setAction.shape1x = (p) => {
         self.shape1.x = p
-        if (sim.election.dimensions === 1) {
-            self.x = p
-            self.y = 250
-        }
         changes.add(['draggables'])
     }
-    self.setXY = (p) => {
-        if (sim.election.dimensions === 1) {
-            const cur = candidateDnCommander.setForListSenders.shape1x.getCurrentValue(id)
-            candidateDnCommander.setForListSenders.shape1x.go(id, p.x, cur)
-        } else {
-            const cur = candidateDnCommander.setForListSenders.shape2p.getCurrentValue(id)
-            candidateDnCommander.setForListSenders.shape2p.go(id, p, cur)
-        }
+    self.setXY1 = (p) => {
+        const cur = candidateDnCommander.setForListSenders.shape1x.getCurrentValue(id)
+        candidateDnCommander.setForListSenders.shape1x.go(id, p.x, cur)
     }
-    /** Do this when entering a state because x and y change.
-     *  Maybe x and y should be in the SimCandidateDn instead... just speculating. */
-    self.updateXY = () => {
-        if (sim.election.dimensions === 1) {
-            self.setAction.shape1x(self.shape1.x)
-        } else {
-            self.setAction.shape2p({ x: self.shape2.x, y: self.shape2.y })
-        }
+    self.setXY2 = (p) => {
+        const cur = candidateDnCommander.setForListSenders.shape2p.getCurrentValue(id)
+        candidateDnCommander.setForListSenders.shape2p.go(id, p, cur)
     }
 
     self.setAction.shape2w = (newW) => {
@@ -133,15 +112,20 @@ export default function CandidateDistribution(
         const cur = candidateDnCommander.setForListSenders.shape1densityProfile.getCurrentValue(id)
         candidateDnCommander.setForListSenders.shape1densityProfile.go(id, newDensityProfile1, cur)
     }
-    self.instantiate()
 
-    // Click Handler
-
-    self.click = () => {
-        tooltipForEntity(self, screen, sim)
+    self.setAction.party = (newParty) => {
+        self.party = newParty
+        changes.add(['party'])
     }
+    self.setParty = (e) => {
+        const cur = candidateDnCommander.setForListSenders.party.getCurrentValue(id)
+        candidateDnCommander.setForListSenders.party.go(id, e, cur)
+    }
+
+    self.instantiate()
 
     // Rendering
 
     self.color = '#ccc'
+    self.darkModeColor = '#333'
 }

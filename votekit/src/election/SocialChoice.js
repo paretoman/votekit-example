@@ -17,25 +17,31 @@ export default function SocialChoice(menu) {
 
     self.seats = 1
 
-    self.run = (canList, votes) => {
+    self.run = (canList, votes, parties) => {
         // why have two different kinds of results?
         // socialChoiceResults, the smaller one,
         //   is in the context of the election method,
         //   which has tallies go in and analysis come out
         // electionResults, the larger one,
         //   is in the context of candidate objects and voter objects.
+        const colorRGBAOfCandidates = canList.map((c) => c.colorRGBA)
         if (self.checkElectionType() === 'allocation' || self.checkElectionType() === 'multiWinner') {
             const electionMethodOptions = { seats: self.seats, threshold: 0.1 }
             const electionMethod = electionMethods[self.electionMethod]
-            const socialChoiceResults = electionMethod(votes, electionMethodOptions)
-            const { allocation } = socialChoiceResults
-            const electionResults = { allocation, canList, votes }
+            const socialChoiceResults = electionMethod({ votes, parties, electionMethodOptions })
+            const { allocation, explanation } = socialChoiceResults
+            const electionResults = {
+                allocation, explanation, canList, votes, colorRGBAOfCandidates,
+            }
             return electionResults
         }
-        const socialChoiceResults = electionMethods[self.electionMethod](votes)
+        const electionMethod = electionMethods[self.electionMethod]
+        const socialChoiceResults = electionMethod({ votes, parties })
         const { iWinner } = socialChoiceResults
         const winner = canList[iWinner]
-        const electionResults = { iWinner, winner, votes }
+        const electionResults = {
+            iWinner, winner, votes, colorRGBAOfCandidates,
+        }
         return electionResults
     }
 
@@ -61,6 +67,21 @@ export default function SocialChoice(menu) {
         {
             name: 'Minimax', value: 'minimax', type: 'singleWinner', casterName: 'pairwise',
         },
+        {
+            name: 'OLPR A', value: 'olprA', type: 'multiWinner', casterName: 'olprA',
+        },
+        {
+            name: 'Sainte-Lague', value: 'sainteLague', type: 'allocation', casterName: 'plurality',
+        },
+        {
+            name: "d'Hondt", value: 'dHondt', type: 'allocation', casterName: 'plurality',
+        },
+        {
+            name: 'AllocScore', value: 'allocatedScore', type: 'multiWinner', casterName: 'scoreLong',
+        },
+        {
+            name: 'MES', value: 'methodOfEqualShares', type: 'multiWinner', casterName: 'scoreLong',
+        },
     ]
 
     // utilities for looking up this list
@@ -85,7 +106,7 @@ export default function SocialChoice(menu) {
         } else if (electionType === 'multiWinner') {
             self.seats = 3
             self.numSampleCandidates = 10
-        } else {
+        } else { // 'singleWinner'
             self.seats = 1
             self.numSampleCandidates = 5
         }

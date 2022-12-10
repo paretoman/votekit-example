@@ -2,8 +2,9 @@ import CircleGraphic from '../vizEntities/CircleGraphic.js'
 import hideOnClickOutside from '../tooltips/hideOnClickOutside.js'
 import tooltipForTestVoter from '../tooltips/tooltipForTestVoter.js'
 import colorBlender, { rgbToString } from '../viz/colorBlender.js'
+import EntityGraphic from '../vizEntities/EntityGraphic.js'
 
-export default function VoterTest(screen, sims, sim) {
+export default function VoterTest(screen, views, sim, view) {
     const self = this
 
     // Position
@@ -22,33 +23,18 @@ export default function VoterTest(screen, sims, sim) {
     self.setAction.shape2p = (p) => {
         self.shape2.x = p.x
         self.shape2.y = p.y
-        if (sim.election.dimensions === 2) {
-            self.x = p.x
-            self.y = p.y
-        }
+        // todo: maybe add a change
     }
     self.setAction.shape1x = (p) => {
         self.shape1.x = p
-        if (sim.election.dimensions === 1) {
-            self.x = p
-            self.y = 250
-        }
     }
-    self.setXY = (p) => {
-        if (sim.election.dimensions === 1) {
-            self.setAction.shape1x(p.x)
-        } else {
-            self.setAction.shape2p(p)
-        }
-        sim.testVote()
+    self.setXY1 = (p) => {
+        self.setAction.shape1x(p.x)
+        view.testVote()
     }
-    /** Do this when entering a state because x and y change. */
-    self.updateXY = () => {
-        if (sim.election.dimensions === 1) {
-            self.setAction.shape1x(self.shape1.x)
-        } else {
-            self.setAction.shape2p({ x: self.shape2.x, y: self.shape2.y })
-        }
+    self.setXY2 = (p) => {
+        self.setAction.shape2p(p)
+        view.testVote()
     }
 
     // Initialize
@@ -58,32 +44,34 @@ export default function VoterTest(screen, sims, sim) {
 
     // Start displaying testvoter
     self.start = (p) => {
-        sim.voterTest.setE(1)
-        sim.voterTest.setXY(p)
+        view.voterTest.setE(1)
+        view.voterTest.setXYView(p)
         hideOnClickOutside(screen.wrap, removeTestPoint)
     }
     function removeTestPoint() {
-        sim.voterTest.setE(0)
+        view.voterTest.setE(0)
     }
 
     // Dragging
 
     self.color = '#999'
-    const circle = new CircleGraphic(self, 9, screen)
+    const circle = new CircleGraphic(self, self, 9, screen, sim.election, view)
     self.circle = circle
 
-    sims.one.dragm.newCircleHandle(self, self.circle)
-    sims.sample.dragm.newCircleHandle(self, self.circle)
+    EntityGraphic.call(self, self, screen, sim.election)
+
+    views.one.dragm.add(self)
+    // views.sample.dragm.add(self)
 
     // Rendering
 
     let tooltip = {}
 
-    self.update = (vote, candidateSimList) => {
+    self.update = (vote, candidateList) => {
         // who would this test point vote for?
         if (vote === undefined) return null
 
-        const canList = candidateSimList.getCandidates()
+        const canList = candidateList.getCandidates()
         const colorSet = canList.map((can) => can.color)
         const colorSetRGBA = canList.map((can) => can.colorRGBA)
         self.colorSet = colorSet
@@ -99,7 +87,7 @@ export default function VoterTest(screen, sims, sim) {
     }
 
     self.click = () => {
-        const vote = sim.testVote()
+        const vote = view.testVote()
         if (vote === null) return
 
         if (tooltip.box) tooltip.box.remove()
@@ -109,7 +97,7 @@ export default function VoterTest(screen, sims, sim) {
 
     self.renderForeground = () => {
         // handle
-        if (self.exists || sim.showGhosts) {
+        if (self.exists || view.showGhosts) {
             circle.render()
         }
     }

@@ -1,19 +1,16 @@
 /** @module */
 
-// import GeoMaps from './GeoMaps.js'
 import VoterRender1D from './VoterRender1D.js'
 import VoterRender2D from './VoterRender2D.js'
 
 /**
  * Show Voters
- * @param {VoterSimList} voterSimList
+ * @param {VoterViewList} voterViewList
  * @param {screen} screen - draw to the screen
  * @constructor
  */
-export default function VizSample(voterSimList, candidateDnSimList, screen, changes, sim) {
+export default function VizSample(voterViewList, candidateDnViewList, screen, changes, sim) {
     const self = this
-
-    // const geoMaps = new GeoMaps(voterSimList, candidateDnSimList, screen, sim)
 
     // Candidates //
 
@@ -27,18 +24,21 @@ export default function VizSample(voterSimList, candidateDnSimList, screen, chan
 
     // voter renderer factory //
     const VoterRenderer = (dimensions === 1) ? VoterRender1D : VoterRender2D
-    voterSimList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
-    candidateDnSimList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
+    voterViewList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
+    candidateDnViewList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
 
     self.update = function (addResult) {
         if (changes.checkNone() === false) {
             self.start()
         }
 
-        const { pointsChanged, newPoints, points } = addResult
+        const {
+            pointsChanged, newPoints, points, partyWinFraction,
+        } = addResult
 
         if (pointsChanged) {
             self.updatePoints(newPoints, points)
+            candidateDnViewList.setCandidateDnWins(partyWinFraction)
         }
     }
 
@@ -52,11 +52,10 @@ export default function VizSample(voterSimList, candidateDnSimList, screen, chan
     }
 
     self.render = () => {
-        // geoMaps.renderPolicyNoise()
         self.renderCans()
 
-        voterSimList.render()
-        candidateDnSimList.render()
+        voterViewList.render()
+        candidateDnViewList.render()
     }
 
     self.renderCans = function () {
