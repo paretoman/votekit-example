@@ -1,43 +1,37 @@
 /** @module */
 
-import addAllocation from './addAllocation.js'
 import VoronoiRanking1D from './VoronoiRanking1D.js'
 import VoronoiRanking2D from './VoronoiRanking2D.js'
 
 /**
  * Show votes
- * @param {VoterViewList} voterViewList
- * @param {CandidateViewList} candidateViewList
+ * @param {VoterRendererList} voterRendererList
+ * @param {CandidateList} candidateList
  * @param {Screen} screen
  * @param {Sim} sim
  * @constructor
  */
-export default function VizOneVoronoiRanking(voterViewList, candidateViewList, screen, sim) {
+export default function VizOneVoronoiRanking(voterRendererList, candidateList, screen, sim) {
     const self = this
 
     // renderer factory //
     const { dimensions } = sim.election
     const VoronoiRanking = (dimensions === 1) ? VoronoiRanking1D : VoronoiRanking2D
-    const rendererMaker = (voterShape) => new VoronoiRanking(voterShape, candidateViewList, screen)
-    voterViewList.setRenderer(rendererMaker)
+    const rendererMaker = (voterShape) => new VoronoiRanking(voterShape, candidateList, screen)
+    voterRendererList.setRenderer(rendererMaker)
 
     self.enter = () => {}
-    self.exit = () => {
-        candidateViewList.unsetCandidateWins() // clean up fractions
-    }
+    self.exit = () => { }
 
     self.update = function (electionResults) {
         const { error } = electionResults
         if (error !== undefined) return
 
-        const { tallyFractions, allocation } = addAllocation(electionResults)
-        candidateViewList.setCandidateWins(allocation)
-        candidateViewList.setCandidateFractions(tallyFractions)
         const { cellData } = electionResults.votes
-        voterViewList.updateGraphic(cellData)
+        voterRendererList.updateGraphic(cellData)
     }
 
     self.render = function () {
-        voterViewList.render()
+        voterRendererList.render()
     }
 }

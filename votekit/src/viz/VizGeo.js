@@ -1,56 +1,31 @@
 /** @module */
 
-import GeoMaps from './GeoMaps.js'
+import VizGeoPolicyNoise from './VizGeoPolicyNoise.js'
 import VoterRender1D from './VoterRender1D.js'
 import VoterRender2D from './VoterRender2D.js'
 
 /**
  * Show votes
- * @param {VoterGeo} voterGeo
- * @param {VoterViewList} voterViewList
- * @param {CandidateViewList} candidateViewList
+ * @param {VoterRendererList} voterRendererList
+ * @param {CandidateList} candidateList
  * @param {Screen} screen
  * @param {Sim} sim
  * @constructor
  */
-export default function VizGeo(voterGeo, voterViewList, candidateViewList, screen, sim) {
+export default function VizGeo(voterRendererList, candidateList, screen, sim) {
     const self = this
-
-    const geoMaps = new GeoMaps(voterGeo, candidateViewList, screen, sim)
-    let flagNoRender = false
 
     const { dimensions } = sim.election
     const VoterRenderer = (dimensions === 1) ? VoterRender1D : VoterRender2D
-    voterViewList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
+    voterRendererList.setRenderer((voterShape) => new VoterRenderer(voterShape, screen))
 
-    self.enter = () => {
-        screen.showMaps()
-    }
-    self.exit = () => {
-        screen.hideMaps()
-        candidateViewList.unsetCandidateWins() // clean up fractions
-    }
+    const vizGeoPolicyNoise = new VizGeoPolicyNoise(sim, screen)
 
-    self.update = function (geoElectionResults) {
-        const { error } = geoElectionResults
-        if (error !== undefined) {
-            flagNoRender = true
-            return
-        }
-        flagNoRender = false
-
-        geoMaps.update(geoElectionResults)
-
-        const { resultsStatewide, allocation } = geoElectionResults
-        candidateViewList.setCandidateWins(allocation)
-        candidateViewList.setCandidateFractions(resultsStatewide.votes.tallyFractions)
-    }
-
-    self.render = function () {
-        if (flagNoRender) return
-
-        geoMaps.render()
-
-        voterViewList.render()
+    self.enter = () => { }
+    self.exit = () => { }
+    self.update = () => { }
+    self.render = () => {
+        voterRendererList.render()
+        vizGeoPolicyNoise.render()
     }
 }

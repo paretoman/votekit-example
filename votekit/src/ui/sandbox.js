@@ -1,3 +1,4 @@
+/* eslint-disable no-new */
 /** @module */
 
 import Changes from '../sim/Changes.js'
@@ -13,9 +14,16 @@ import addLoadConfigText from '../command/loadConfigText.js'
 import addSaveConfigToLink from '../command/addSaveConfigToLink.js'
 import * as TWEEN from '../lib/snowpack/build/snowpack/pkg/@tweenjs/tweenjs.js'
 import addDarkModeSwitch from './addDarkModeSwitch.js'
-import View from '../sim/View.js'
+import ViewSettings from '../view/ViewSettings.js'
 import menuSim from '../sim/menuSim.js'
 import Entities from '../sim/Entities.js'
+import ViewJupyter from '../environments/ViewJupyter.js'
+import ViewVizBudget from '../view/ViewVizBudget.js'
+import ViewVizOne from '../view/ViewVizOne.js'
+import ViewVizSample from '../view/ViewVizSample.js'
+import ViewGeoMaps from '../view/ViewGeoMaps.js'
+import ViewOne from '../view/ViewOne.js'
+import ViewSample from '../view/ViewSample.js'
 
 /**
  * Set up a user interface to run a simulation.
@@ -62,7 +70,14 @@ export default function sandbox(config, comMessenger, sandboxURL) {
     const entities = new Entities(menu, changes, commander, layout)
     const sim = new Sim(entities, menu, changes)
     menuSim(sim, menu, layout)
-    const view = new View(entities, sim, screen, menu, changes)
+    const viewSettings = new ViewSettings(changes)
+    new ViewOne(entities, screen, menu, changes, sim, viewSettings)
+    new ViewSample(entities, screen, menu, changes, sim, viewSettings)
+    new ViewJupyter(sim, changes)
+    new ViewVizBudget(screen, menu, changes, sim)
+    new ViewVizOne(entities, screen, menu, changes, sim, viewSettings)
+    new ViewVizSample(entities, screen, menu, changes, sim, viewSettings)
+    new ViewGeoMaps(entities, screen, sim)
 
     // Default Entities //
     entities.candidateList.addCandidate({ x: 50, y: 100 }, { x: 50 }, '#e05020', true)
@@ -94,14 +109,14 @@ export default function sandbox(config, comMessenger, sandboxURL) {
 
     function drawForeground() {
         screen.clearForeground()
-        view.renderForeground()
+        sim.renderForeground()
     }
 
     function draw() {
         screen.clear()
         screen.clearMaps()
         screen.clearForeground()
-        view.render()
-        view.renderForeground()
+        sim.render()
+        sim.renderForeground()
     }
 }

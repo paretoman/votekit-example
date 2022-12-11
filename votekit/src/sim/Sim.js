@@ -57,14 +57,15 @@ export default function Sim(entities, menu, changes) {
     self.viz = 'one'
     self.geo = false
     self.election.setDimensions(2)
-    changes.add(['geo', 'dimensions', 'viz'])
+
+    changes.add(['geo', 'dimensions', 'viz', 'districts'])
 
     // State Machine //
     self.update = () => {
         // state: check for change, exit, set, enter, update.
         if (changes.check(['geo', 'dimensions', 'viz', 'electionMethod'])) {
             Object.keys(sims).forEach((k) => sims[k].exit())
-            self.state = computeState()
+            self.state = self.viz
             sims[self.state].enter()
         }
         const results = sims[self.state].update()
@@ -72,11 +73,7 @@ export default function Sim(entities, menu, changes) {
         updateObservers(results)
         changes.clear()
     }
-    function computeState() {
-        // Determine state of sim.
-        if (self.viz === 'one') {
-            return 'one'
-        }
-        return 'sample'
-    }
+
+    self.render = () => { sims[self.state].render() }
+    self.renderForeground = () => { sims[self.state].renderForeground() }
 }

@@ -10,7 +10,7 @@ import { clamp, copyObjectShallow, minIndex } from '../utilities/jsHelpers.js'
  * @param {Changes} changes
  * @constructor
  */
-export default function ClickDrag(dragm, screen, changes, view) {
+export default function ClickDrag(dragm, viewEntities, screen, changes, viewSettings) {
     const self = this
 
     // private variables
@@ -35,7 +35,7 @@ export default function ClickDrag(dragm, screen, changes, view) {
         const hitList = []
         for (let i = 0; i < nd; i++) {
             const d = draggables[i]
-            if ((d.o.exists || view.showGhosts) && hitTest(d, mouse, extra)) {
+            if ((d.o.exists || viewSettings.showGhosts) && hitTest(d, mouse, extra)) {
                 hitList.push(i)
             }
         }
@@ -83,7 +83,7 @@ export default function ClickDrag(dragm, screen, changes, view) {
             const nd = draggables.length
             for (let i = 0; i < nd; i++) {
                 const d = draggables[i]
-                if ((view.showGhosts || d.o.exists) && hitTest(d, mouse, 0)) {
+                if ((viewSettings.showGhosts || d.o.exists) && hitTest(d, mouse, 0)) {
                     grabCanvas.dataset.cursor = 'grab'
                     return
                 }
@@ -197,14 +197,8 @@ export default function ClickDrag(dragm, screen, changes, view) {
                 // We are not dragging anything, and we clicked,
                 // and we're inside the screen because this could be a click,
                 // so let's do the click action for blank space.
-                clickEmpty(startPos)
+                viewEntities.clickEmpty(startPos)
             }
         }
-    }
-
-    // Test Point
-
-    function clickEmpty(p) {
-        view.voterTest.start(p)
     }
 }

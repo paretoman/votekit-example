@@ -1,12 +1,11 @@
 /** @module */
 
-import CandidateDnViewList from '../../candidateDns/CandidateDnViewList.js'
-import VoterViewList from '../../voters/VoterViewList.js'
-import VizSample from '../../viz/VizSample.js'
-import VizSampleDensity1D from '../../viz/VizSampleDensity1D.js'
-import VizSampleDensity2D from '../../viz/VizSampleDensity2D.js'
-import jupyterUpdate, { jupyterClear } from '../../environments/jupyter.js'
+import VizSample from '../viz/VizSample.js'
+import VizSampleDensity1D from '../viz/VizSampleDensity1D.js'
+import VizSampleDensity2D from '../viz/VizSampleDensity2D.js'
 import ViewBase from './ViewBase.js'
+import VoterRendererList from '../voters/VoterRendererList.js'
+import CandidateDnRendererList from '../candidateDns/CandidateDnRendererList.js'
 
 /**
  * Simulate many sample elections with
@@ -16,22 +15,21 @@ import ViewBase from './ViewBase.js'
  * @param {Menu} menu
  * @param {Changes} changes
  * @param {Sim} sim
- * @param {View} view
+ * @param {ViewSettings} viewSettings
  * @constructor
  */
-export default function ViewSample(entities, screen, menu, changes, sim, view) {
+export default function ViewVizSample(entities, screen, menu, changes, sim, viewSettings) {
     const self = this
 
-    ViewBase.call(self, screen, changes, view)
+    sim.sims.sample.pub.attach(self)
+
+    ViewBase.call(self, screen, changes, viewSettings)
 
     // Entities //
     const { candidateDnList, voterShapeList } = entities
 
-    const candidateDnViewList = new CandidateDnViewList(view, candidateDnList, screen, sim.election)
-    const voterViewList = new VoterViewList(view, voterShapeList, screen, sim.election)
-
-    candidateDnViewList.attachNewG(self.dragm)
-    voterViewList.attachNewG(self.dragm)
+    const voterRendererList = new VoterRendererList(voterShapeList)
+    const canDnRendererList = new CandidateDnRendererList(candidateDnList)
 
     // Strategies //
 
@@ -42,22 +40,17 @@ export default function ViewSample(entities, screen, menu, changes, sim, view) {
             ? VizSampleDensity1D
             : VizSampleDensity2D
         const VizSampleStrat = (doDensity) ? VizSampleDensity : VizSample
-        vizSample = new VizSampleStrat(voterViewList, candidateDnViewList, screen, changes, sim)
+        vizSample = new VizSampleStrat(voterRendererList, canDnRendererList, screen, changes, sim)
     }
+    enterStrategy()
 
     // Main State Machine Functions //
 
-    const superEnter = self.enter
     self.enter = () => {
-        superEnter()
-        candidateDnList.canDnButton.show()
         enterStrategy()
-        voterViewList.updateViewXY()
-        candidateDnViewList.updateViewXY()
     }
 
     self.exit = () => {
-        candidateDnList.canDnButton.hide()
     }
 
     self.update = (addResult) => {
@@ -65,24 +58,17 @@ export default function ViewSample(entities, screen, menu, changes, sim, view) {
         // The election handles any changes.
         // The electionResults communicates how to visualize the election.
 
-        jupyterClear()
-        jupyterUpdate({ addResult })
         vizSample.update(addResult)
 
         const { pointsChanged } = addResult
+
         if (pointsChanged) {
             screen.clear()
             self.render()
         }
     }
 
-    self.testVoteView = () => null
-
     self.render = () => {
         vizSample.render()
-    }
-    self.renderForeground = () => {
-        voterViewList.renderForeground()
-        candidateDnViewList.renderForeground()
     }
 }

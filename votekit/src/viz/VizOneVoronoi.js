@@ -1,42 +1,36 @@
 /** @module */
 
-import addAllocation from './addAllocation.js'
 import Voronoi1D from './Voronoi1D.js'
 import Voronoi2D from './Voronoi2D.js'
 
 /**
  * Show votes
- * @param {VoterViewList} voterViewList
- * @param {CandidateViewList} candidateViewList
+ * @param {VoterRendererList} voterRendererList
+ * @param {CandidateList} candidateList
  * @param {Screen} screen
  * @param {Sim} sim
  * @constructor
  */
-export default function VizOneVoronoi(voterViewList, candidateViewList, screen, sim) {
+export default function VizOneVoronoi(voterRendererList, candidateList, screen, sim) {
     const self = this
 
     // renderer factory //
     const { dimensions } = sim.election
     const Voronoi = (dimensions === 1) ? Voronoi1D : Voronoi2D
-    const rendererMaker = (voterShape) => new Voronoi(voterShape, candidateViewList, screen)
-    voterViewList.setRenderer(rendererMaker)
+    const rendererMaker = (voterShape) => new Voronoi(voterShape, candidateList, screen)
+    voterRendererList.setRenderer(rendererMaker)
 
     self.enter = () => {}
-    self.exit = () => {
-        candidateViewList.unsetCandidateWins() // clean up fractions
-    }
+    self.exit = () => { }
 
     self.update = function (electionResults) {
         const { error } = electionResults
         if (error !== undefined) return
 
-        const { tallyFractions, allocation } = addAllocation(electionResults)
-        candidateViewList.setCandidateWins(allocation)
-        candidateViewList.setCandidateFractions(tallyFractions)
-        voterViewList.updateGraphic()
+        voterRendererList.updateGraphic()
     }
 
     self.render = function () {
-        voterViewList.render()
+        voterRendererList.render()
     }
 }

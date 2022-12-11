@@ -7,12 +7,11 @@ import VoterView from './VoterView.js'
  * because it is a list of VoterView objects rather than VoterShape objects.
  * @constructor
  */
-export default function VoterViewList(view, voterShapeList, screen, election) {
+export default function VoterViewList(viewSettings, voterShapeList, screen, election) {
     const self = this
 
     const list = []
     self.list = list
-    self.rendererMaker = () => ({ render: () => {} })
 
     // Publish to DraggableManager //
     const observers = []
@@ -27,9 +26,8 @@ export default function VoterViewList(view, voterShapeList, screen, election) {
 
     // Setters and Getters //
     self.newVoterShape = function (voterShape) {
-        const voterView = new VoterView(voterShape, screen, election, view)
+        const voterView = new VoterView(voterShape, screen, election, viewSettings)
         list.push(voterView)
-        voterView.graphic.setRenderer(self.rendererMaker)
         updateObservers(voterView)
     }
 
@@ -40,25 +38,10 @@ export default function VoterViewList(view, voterShapeList, screen, election) {
     self.updateViewXY = () => {
         list.forEach((v) => v.graphic.updateViewXY())
     }
-    self.setRenderer = (rendererMaker) => {
-        self.rendererMaker = rendererMaker
-        list.forEach((v) => v.graphic.setRenderer(rendererMaker))
-    }
-    self.updateGraphic = (data) => {
-        const voterViewsEx = self.getVoterViews()
-        if (data === undefined) {
-            voterViewsEx.forEach((v) => v.graphic.renderer.update())
-        } else {
-            voterViewsEx.forEach((v, i) => v.graphic.renderer.update(data[i]))
-        }
-    }
 
     // Render //
-    self.render = () => {
-        list.forEach((v) => { if (v.voterShape.exists) v.graphic.renderer.render() })
-    }
     self.renderForeground = () => {
-        if (view.showGhosts) {
+        if (viewSettings.showGhosts) {
             self.renderForegroundAll()
         } else {
             self.renderForegroundExisting()
@@ -69,8 +52,5 @@ export default function VoterViewList(view, voterShapeList, screen, election) {
     }
     self.renderForegroundAll = () => {
         list.forEach((v) => { v.graphic.renderForeground() })
-    }
-    self.renderBackground = () => {
-        list.forEach((v) => { if (v.voterShape.exists) v.graphic.renderer.renderBackground() })
     }
 }

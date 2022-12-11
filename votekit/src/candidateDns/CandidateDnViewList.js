@@ -8,7 +8,7 @@ import CandidateDnView from './CandidateDnView.js'
  * It also checks if that member exists. Alternatively, it was deleted.
  * @constructor
  */
-export default function CandidateDnViewList(view, candidateDnList, screen, election) {
+export default function CandidateDnViewList(viewSettings, candidateDnList, screen, election) {
     const self = this
 
     const canDnViews = []
@@ -28,7 +28,7 @@ export default function CandidateDnViewList(view, candidateDnList, screen, elect
     // Data Setters and Getters //
 
     self.newCandidateDn = function (candidateDn) {
-        const canDnView = new CandidateDnView(candidateDn, screen, election, 21, 21, view)
+        const canDnView = new CandidateDnView(candidateDn, screen, election, 21, 21, viewSettings)
         canDnViews.push(canDnView)
         canDnView.graphic.setRenderer(self.rendererMaker)
         updateObservers(canDnView)
@@ -42,8 +42,8 @@ export default function CandidateDnViewList(view, candidateDnList, screen, elect
 
     // get the underlying entities of the above
     self.getCandidateDistributions = () => {
-        const simCanDnsEx = self.getCanDnViews()
-        return simCanDnsEx.map((canDnView) => canDnView.canDn)
+        const canDnViewsEx = self.getCanDnViews()
+        return canDnViewsEx.map((canDnView) => canDnView.canDn)
     }
     self.getCandidateDistributionsAll = () => canDnViews.map((canDnView) => canDnView.canDn)
 
@@ -75,7 +75,7 @@ export default function CandidateDnViewList(view, candidateDnList, screen, elect
         canDnViews.forEach((canDnView) => canDnView.graphic.setRenderer(rendererMaker))
     }
     self.renderForeground = () => {
-        if (view.showGhosts) {
+        if (viewSettings.showGhosts) {
             self.renderForegroundAll()
         } else {
             self.renderForegroundExisting()
