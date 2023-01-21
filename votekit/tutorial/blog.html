@@ -44,12 +44,21 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/votekit-example/about/">About</a><a class="page-link" href="/votekit-example/votekit/tutorial/architecture.html">Architecture</a><a class="page-link" href="/votekit-example/votekit/tutorial/blog.html">Blog</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_1d.html">1D</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_commands.html">Commands</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_screen.html">Screen</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_sim.html">Sim</a><a class="page-link" href="/votekit-example/devlog/">Development Log</a><a class="page-link" href="/votekit-example/votekit/tutorial/">Pages</a><a class="page-link" href="/votekit-example/votekit/tutorial/issues.html">Issues</a><a class="page-link" href="/votekit-example/votekit/tutorial/program_flow_drag.html">Program Flow Dragging a Voter</a><a class="page-link" href="/votekit-example/votekit/tutorial/program_flow_new.html">Program Flow Adding a New Voter</a><a class="page-link" href="/votekit-example/submodule-instructions/">Submodule Instructions</a></div>
+        <div class="trigger"><a class="page-link" href="/votekit-example/votekit/tutorial/ViewMode.html">ViewMode</a><a class="page-link" href="/votekit-example/about/">About</a><a class="page-link" href="/votekit-example/votekit/tutorial/architecture.html">Architecture</a><a class="page-link" href="/votekit-example/votekit/tutorial/blog.html">Blog</a><a class="page-link" href="/votekit-example/votekit/tutorial/castVotes.html">CastVotes</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_commands.html">CommandsDetailed</a><a class="page-link" href="/votekit-example/votekit/tutorial/commands.html">Commands</a><a class="page-link" href="/votekit-example/devlog/">Development Log</a><a class="page-link" href="/votekit-example/votekit/tutorial/election.html">Election</a><a class="page-link" href="/votekit-example/votekit/tutorial/electionSampler.html">ElectionSampler</a><a class="page-link" href="/votekit-example/votekit/tutorial/entities.html">Entities</a><a class="page-link" href="/votekit-example/votekit/tutorial/folders.html">Folders</a><a class="page-link" href="/votekit-example/votekit/tutorial/">Pages</a><a class="page-link" href="/votekit-example/votekit/tutorial/issues.html">Issues</a><a class="page-link" href="/votekit-example/votekit/tutorial/programFlow.html">ProgramFlow</a><a class="page-link" href="/votekit-example/votekit/tutorial/programFlowDrag.html">Program Flow Dragging a Voter</a><a class="page-link" href="/votekit-example/votekit/tutorial/sandbox.html">Sandbox</a><a class="page-link" href="/votekit-example/votekit/tutorial/screen.html">Screen</a><a class="page-link" href="/votekit-example/votekit/tutorial/sim.html">Sim</a><a class="page-link" href="/votekit-example/votekit/tutorial/simMode.html">SimMode</a><a class="page-link" href="/votekit-example/votekit/tutorial/socialChoice.html">SocialChoice</a><a class="page-link" href="/votekit-example/submodule-instructions/">Submodule Instructions</a><a class="page-link" href="/votekit-example/votekit/tutorial/tooltips.html">Tooltips</a><a class="page-link" href="/votekit-example/votekit/tutorial/view.html">View</a><a class="page-link" href="/votekit-example/votekit/tutorial/viewButtons.html">ViewButtons</a><a class="page-link" href="/votekit-example/votekit/tutorial/viewScreens.html">ViewScreens</a><a class="page-link" href="/votekit-example/votekit/tutorial/viz.html">Viz</a><a class="page-link" href="/votekit-example/votekit/tutorial/vizEntities.html">Viz</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <h1 id="learning-jsdoc">Learning JSDoc</h1>
+        <p>Here are some tools for development.</p>
+
+<p>I’m not sure if this is useful. I usually write notes to myself outside of the repo.</p>
+
+<ul>
+  <li>Parent Page: <a href="index.md">index</a></li>
+</ul>
+
+<h2 id="learning-jsdoc">Learning JSDoc</h2>
+
 <p>Documentation generator. Using JSDoc. 
 To Install:</p>
 
@@ -60,10 +69,7 @@ To Install:</p>
 <p><a href="https://www.youtube.com/watch?v=YK-GurROGIg">Crash Course</a> - First 8 minutes.
 <a href="https://jsdoc.app/howto-es2015-modules.html">ES2015 Modules</a> - how to document a module.</p>
 
-<h1 id="libraries">Libraries</h1>
-<p>To get d3-delaunay as an importable module, I temporarily did an npm install d3-delaunay. Then I copied the code, removed the beginning and end parts that deal with npm exports, and renamed it d3-delaunay.esm.js. I did a similar thing with canvas2svg but I just downloaded it from github instead of using npm.</p>
-
-<h1 id="learning-parcel">Learning Parcel</h1>
+<h2 id="learning-parcel">Learning Parcel</h2>
 
 <p>had to install dependency with npm</p>
 
@@ -75,12 +81,6 @@ To Install:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npx parcel .\src\pages\index.html
 </code></pre></div></div>
 
-<p>Couldn’t import from https. So I</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// import { Delaunay } from 'd3-delaunay'
-import { Delaunay } from 'https://cdn.skypack.dev/d3-delaunay@6'
-</code></pre></div></div>
-
 <p>Clean dist folder:
 https://stackoverflow.com/a/69665352</p>
 
@@ -88,14 +88,7 @@ https://stackoverflow.com/a/69665352</p>
 
 <p>Here’s an interesting sourcemap visualizer: https://parceljs.org/plugin-system/source-maps/#diagnosing-issues</p>
 
-<p>Tried a few different build steps during deployment to netlify. Build-2 worked. It keeps relative paths. I set the publish directory on netlify to “dist”.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>"build-1": "parcel build ./tutorial/*.html ./src/test/test.html --public-url ./",
-"build-2": "parcel build ./tutorial/*.html ./src/test/test.html --public-url ../",
-"build-3": "parcel build ./tutorial/*.html ./src/test/test.html"
-</code></pre></div></div>
-
-<h1 id="codesandbox">Codesandbox</h1>
+<h2 id="codesandbox">Codesandbox</h2>
 <p>I had to get the babel package “@babel/plugin-proposal-class-properties” to get the codesandbox to work. This required a few changes, like adding a .babelrc and adding @babel/core as well. I only use babel for this, and I don’t yet use babel for transpiling from the command line.</p>
 
       </div>

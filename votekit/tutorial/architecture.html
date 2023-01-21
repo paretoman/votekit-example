@@ -44,317 +44,46 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/votekit-example/about/">About</a><a class="page-link" href="/votekit-example/votekit/tutorial/architecture.html">Architecture</a><a class="page-link" href="/votekit-example/votekit/tutorial/blog.html">Blog</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_1d.html">1D</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_commands.html">Commands</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_screen.html">Screen</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_sim.html">Sim</a><a class="page-link" href="/votekit-example/devlog/">Development Log</a><a class="page-link" href="/votekit-example/votekit/tutorial/">Pages</a><a class="page-link" href="/votekit-example/votekit/tutorial/issues.html">Issues</a><a class="page-link" href="/votekit-example/votekit/tutorial/program_flow_drag.html">Program Flow Dragging a Voter</a><a class="page-link" href="/votekit-example/votekit/tutorial/program_flow_new.html">Program Flow Adding a New Voter</a><a class="page-link" href="/votekit-example/submodule-instructions/">Submodule Instructions</a></div>
+        <div class="trigger"><a class="page-link" href="/votekit-example/votekit/tutorial/ViewMode.html">ViewMode</a><a class="page-link" href="/votekit-example/about/">About</a><a class="page-link" href="/votekit-example/votekit/tutorial/architecture.html">Architecture</a><a class="page-link" href="/votekit-example/votekit/tutorial/blog.html">Blog</a><a class="page-link" href="/votekit-example/votekit/tutorial/castVotes.html">CastVotes</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_commands.html">CommandsDetailed</a><a class="page-link" href="/votekit-example/votekit/tutorial/commands.html">Commands</a><a class="page-link" href="/votekit-example/devlog/">Development Log</a><a class="page-link" href="/votekit-example/votekit/tutorial/election.html">Election</a><a class="page-link" href="/votekit-example/votekit/tutorial/electionSampler.html">ElectionSampler</a><a class="page-link" href="/votekit-example/votekit/tutorial/entities.html">Entities</a><a class="page-link" href="/votekit-example/votekit/tutorial/folders.html">Folders</a><a class="page-link" href="/votekit-example/votekit/tutorial/">Pages</a><a class="page-link" href="/votekit-example/votekit/tutorial/issues.html">Issues</a><a class="page-link" href="/votekit-example/votekit/tutorial/programFlow.html">ProgramFlow</a><a class="page-link" href="/votekit-example/votekit/tutorial/programFlowDrag.html">Program Flow Dragging a Voter</a><a class="page-link" href="/votekit-example/votekit/tutorial/sandbox.html">Sandbox</a><a class="page-link" href="/votekit-example/votekit/tutorial/screen.html">Screen</a><a class="page-link" href="/votekit-example/votekit/tutorial/sim.html">Sim</a><a class="page-link" href="/votekit-example/votekit/tutorial/simMode.html">SimMode</a><a class="page-link" href="/votekit-example/votekit/tutorial/socialChoice.html">SocialChoice</a><a class="page-link" href="/votekit-example/submodule-instructions/">Submodule Instructions</a><a class="page-link" href="/votekit-example/votekit/tutorial/tooltips.html">Tooltips</a><a class="page-link" href="/votekit-example/votekit/tutorial/view.html">View</a><a class="page-link" href="/votekit-example/votekit/tutorial/viewButtons.html">ViewButtons</a><a class="page-link" href="/votekit-example/votekit/tutorial/viewScreens.html">ViewScreens</a><a class="page-link" href="/votekit-example/votekit/tutorial/viz.html">Viz</a><a class="page-link" href="/votekit-example/votekit/tutorial/vizEntities.html">Viz</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <p>The architecture tries to be context-oriented toward the task to be performed. The client level has uses of the application. The application has five main parts: user input, game commands, game model, election model, and visualization. These are roughly in order of program control. Input gets processed to output. Also, there is a Model-View-Controller (MVC) architecture. Sim is a mix of model and view right now. ClickDrag and Menu are controllers. Viz is view. Also, there are libraries and documentation. That is a high level overview and below we address each item in the src folder.</p>
-
-<p>A good reference for MVC is the first chapter of Pattern-Oriented Software Architecture by Buschmann in 1996.</p>
-
-<p><a href="program_flow.drawio">Program Flow Diagram</a></p>
-
-<p>Todo: update this architecture page with a more accurate description.</p>
-
-<h2 id="client">Client</h2>
-
-<ul>
-  <li>index.html
-    <ul>
-      <li>The main file that shows a sandbox.</li>
-    </ul>
-  </li>
-  <li>s
-    <ul>
-      <li>A standalone sandbox page to link to when saving the configuration to a link.</li>
-    </ul>
-  </li>
-  <li>Environments
-    <ul>
-      <li>There is some basic jupyter functionality to output votes and results.</li>
-    </ul>
-  </li>
-  <li>Test
-    <ul>
-      <li>A bare bones unit test for now. Should do more.</li>
-    </ul>
-  </li>
-  <li>test.html
-    <ul>
-      <li>Integration tests</li>
-    </ul>
-  </li>
+        <ul>
+  <li>Parent page: [index][index.md]</li>
+  <li>Child pages:  <a href="folders.md">folders</a>, <a href="election.md">Election</a>. <a href="sim.md">Sim</a>, <a href="view.md">View</a>, <a href="sandbox.md">sandbox</a>, <a href="programFlow.md">Program flow</a></li>
 </ul>
 
-<h2 id="user-input">User Input</h2>
+<p>There is a central model-view division that follows the observer pattern. Source <a href="folders.md">folders</a> are loosely divided between election, sim, view, and sandbox. The tests folder is for the client.</p>
 
-<p>Control a 2D spatial model.</p>
+<p><a href="sim.md">Sim</a> is the main model. It stores inputs and processes them into outputs. Inputs are spatial election model geometries and election options. Processing is holding one or multiple elections. Outputs are the election results.</p>
 
-<ul>
-  <li>Menu
-    <ul>
-      <li>Implementing a menu above the main screen.</li>
-    </ul>
-  </li>
-  <li>Tooltips
-    <ul>
-      <li>Make a tooltip appear when an entity is clicked or a blank space is clicked.</li>
-    </ul>
-  </li>
-  <li>UI
-    <ul>
-      <li>Sandbox is the main user interface.</li>
-      <li>Screen is a context for drawing and also has events that are handled by ClickDrag. See <a href="code_screen.md">screen</a>.</li>
-      <li>Layout puts divs in order.</li>
-      <li>doubleSandbox provides two sandboxes that are linked.</li>
-    </ul>
-  </li>
-  <li>More UI elements are in additional folders specific to their context.</li>
-</ul>
+<p><a href="election.md">Election</a> handles casting votes and applying a social choice function. This part is more general than Sim and could more likely be used as a library for other projects.</p>
 
-<h2 id="input-handlers">Input Handlers</h2>
+<p><a href="view.md">View</a> sends browser inputs into the Sim and displays visualizations of Sim’s outputs. Browser input controls include menus, tooltips, and screens.</p>
+
+<p>A <a href="sandbox.md">sandbox</a> adds the Sim and View to a page. The addSandboxes script adds a sandbox to any element of the HTML page with class ‘sandbox’.</p>
+
+<p>The components roughly depend on each other like so:</p>
+
+<p>sandbox -&gt; view -&gt; sim -&gt; election</p>
 
 <ul>
-  <li>UI
-    <ul>
-      <li>ClickDrag handles events from the Screen.</li>
-    </ul>
-  </li>
+  <li>sandbox imports: sim, view</li>
+  <li>view imports: sim, election</li>
+  <li>sim imports: election</li>
 </ul>
 
-<h2 id="game-commands">Game Commands</h2>
+<p><a href="programFlow.md">Program flow</a> is triggered by loading the page and accepting program inputs from the HTML and URL.</p>
 
-<ul>
-  <li>Command
-    <ul>
-      <li>Allow multiple user inputs to launch the same commands.</li>
-      <li>Trigger actions in the game model that are registered with the command pattern.</li>
-      <li>ConfigKeeper: Implement configuration that can be saved to text.</li>
-      <li>History: Implement undo and redo.</li>
-      <li>ComMessenger: link two sandboxes.</li>
-      <li>UI elements for text input and undo and redo buttons.</li>
-      <li>Add to the Changes class to trigger Sim updates.</li>
-      <li>See <a href="code_commands.md">commands</a>.</li>
-    </ul>
-  </li>
-</ul>
+<p>Tests are examples of how a client could use this program. They are used during development to test the program. To use this program, copy index.html and s/index.html to where you want to in your own site. Use “s/index.html” as a standalone sandbox page to link to when saving the configuration to a link.</p>
 
-<h2 id="game-model">Game Model</h2>
+<p>In the future, unit tests for the sim will be added.</p>
 
-<ul>
-  <li>Sim
-    <ul>
-      <li>The Sim class manages voter entities and candidate entities.</li>
-      <li>See <a href="code_sim.md">sim</a>.</li>
-      <li>Entities are visual objects that can be controlled by the user. These include voters and candidates.</li>
-      <li>Sim is a state machine with the following states: SimGeoOne, SimOne1D, SimOne2D, and SimSample. Each state is like a different game. Entities are shared between states. Wrappers use the entities as components to provide additional functionality to the states.</li>
-      <li>State Updates
-        <ul>
-          <li>The basic process is to run an election and visualize the result. The election code handles any changes. The electionResults communicates how to visualize the election.</li>
-        </ul>
-      </li>
-      <li>Changes is a class that keeps track of a list of changes. When the Sim’s update method is called, the Sim checks if there are any changes and that controls the flow of the program. Updates are called on every animation frame.</li>
-    </ul>
-  </li>
-  <li>Voters
-    <ul>
-      <li>VoterShape represents a continuous population of voters.
-        <ul>
-          <li>The other classes below are responsible for managing interactions between voterShapes, as opposed to managing an individual voterShape.</li>
-        </ul>
-      </li>
-      <li>VoterShapeList manages a list of these VoterShape objects and adds new ones.
-        <ul>
-          <li>Registrar is the component that manages the list.</li>
-          <li>VoterCommander is the component that handles commands for each VoterShape.</li>
-        </ul>
-      </li>
-      <li>VoterView deals with dragging the VoterShape for a particular sim.
-        <ul>
-          <li>voterShape is a component of VoterView.</li>
-        </ul>
-      </li>
-      <li>VoterViewList manages a list of VoterView objects for each sim. It provides a count of the VoterShapes and renders the VoterShapes. It is important because the “exists” property of a VoterShape can be toggled, so we have to filter the list of voters</li>
-      <li>VoterTest is a copy of VoterShape, mostly. VoterTest exists outside of these other classes. It doesn’t have command history and doesn’t interact with other voters. It’s just a test.</li>
-      <li>Data types:
-        <ul>
-          <li>These are the standard ways of referring to voter objects that are not classes.</li>
-          <li>voterGroup: an object with a shape1, shape2, and weight (optional) property.</li>
-          <li>voterGeom:
-            <ul>
-              <li>For 2D, an array of objects: {x,y,w}.</li>
-              <li>For 1D, an array of objects: {x,w,densityProfile}.</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li>Candidates
-    <ul>
-      <li>Candidate represents a single candidate. It keeps its state, works with undo, and has render functions.</li>
-      <li>CandidateList manages a list of candidates and adds new ones.
-        <ul>
-          <li>Registrar is the component that manages the list.</li>
-          <li>CandidateCommander is the component that handles commands for each Candidate.</li>
-        </ul>
-      </li>
-      <li>CandidateView deals with dragging the Candidate for a particular sim.</li>
-      <li>CandidateViewList manages a list of CandidateView objects and tracks whether candidates exist and provides functions to return an array of Candidate objects. It also handles methods that apply to all the members of the list so you don’t have to loop through the Candidate objects on your own.</li>
-      <li>Data types:
-        <ul>
-          <li>I made a standard way of referring to candidates as objects that are not classes.</li>
-          <li>canGeoms:
-            <ul>
-              <li>For 2D, an array of objects: {x,y}.</li>
-              <li>For 1D, an array of objects: {x}.</li>
-            </ul>
-          </li>
-          <li>canList: An array of Candidate objects.</li>
-          <li>candidateViewList: a CandidateViewList object.</li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li>CandidateDns
-    <ul>
-      <li>Nearly identical mirrors of the classes for Candidates above exist for CandidateDns.</li>
-    </ul>
-  </li>
-</ul>
+<p>Also, there are libraries, utilities, and documentation. Npm libraries are copied here using snowpack. Tutorial pages explain the architecture. JsDoc generates docs for js files and functions, but this can be harder to read.</p>
 
-<h2 id="election-model">Election Model</h2>
+<p>For a reference on model-view division and Model-View-Controller architecture, see Pattern-Oriented Software Architecture by Buschmann in 1996. Really, all you need to know is the observer pattern.</p>
 
-<p>Do the math of the election: casting and counting votes.</p>
-
-<ul>
-  <li>Election
-    <ul>
-      <li>The Election class just has code in the context of running a spatial election model. Geometries for voters and candidates are passed as arguments to functions in the Election class.</li>
-      <li>There are sim-type-specific classes that include Election as a component: ElectionOne, ElectionSample, and ElectionGeo.</li>
-      <li>SocialChoice
-        <ul>
-          <li>The difference between SocialChoice and Election is that Election is a mediator for all the aspects of a spatial election model such as casting a vote, or the number of dimensions, while SocialChoice is a component of the Election that just considers the votes and the result of running the election method. Then SocialChoice returns a summary of the results of the election method.</li>
-        </ul>
-      </li>
-      <li>VoterGeo provides a modification of voter positions over a geographical space with districts</li>
-      <li>ElectionGeo compiles district and statewide elections.</li>
-    </ul>
-  </li>
-  <li>CastVotes
-    <ul>
-      <li>Voters cast their ballots.</li>
-      <li>A distribution of a population of voters is sampled. A 2D spatial model is used to make the decision of how to vote or who to vote for.</li>
-      <li>The vote is aggregated into a set that only contains the information needed to elect winners and to visualize.</li>
-      <li>There are two ways to cast.
-        <ol>
-          <li>By voter.</li>
-          <li>By regions of voters. This is more complicated.</li>
-        </ol>
-      </li>
-      <li>Output:
-        <ul>
-          <li>Some of the following is output.</li>
-          <li>for electionMethods
-            <ul>
-              <li>votePop - the fraction of the population that voted as listed.</li>
-              <li>List of votes:
-                <ul>
-                  <li>scoreVotes - a list of votes. Each vote has a score for each candidate.</li>
-                  <li>rankingVotes - a list of votes. Each vote has a rank for each candidate.</li>
-                  <li>cansByRank - a list of votes. Each vote is a list indexed by ranking. A list of candidates is at each ranking.</li>
-                </ul>
-              </li>
-              <li>preComputedTallies:
-                <ul>
-                  <li>tallyFractions - a number for each candidate.</li>
-                  <li>pairwiseTallyFractions - a fraction for each pair of candidates.</li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li>for viz
-            <ul>
-              <li>cellData:
-                <ul>
-                  <li>{ranking, cells}</li>
-                  <li>{ranking, intervalBorders}</li>
-                </ul>
-              </li>
-              <li>gridData: { grid, voteSet, voterGeom }</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li>ElectionMethods
-    <ul>
-      <li>A list of election methods with the same interface.</li>
-      <li>Input votes and some optional precomputed tallies.</li>
-      <li>Output a social choice and any information for visualization.</li>
-    </ul>
-  </li>
-</ul>
-
-<h2 id="visualize">Visualize</h2>
-
-<ul>
-  <li>Viz
-    <ul>
-      <li>Input:
-        <ul>
-          <li>cellData or gridData</li>
-        </ul>
-      </li>
-      <li>This is preferred to having the voters and candidates draw themselves because there can be interactions and overlaps.</li>
-      <li>Viz* draws the voters because there is more context to draw them as a group than individually.
-        <ul>
-          <li>VizOneVoronoi - for votes cast like plurality.</li>
-          <li>VizOneGrid - for votes cast like score.</li>
-          <li>VizGeo - for votes cast in districts.</li>
-          <li>All implement an abstract class of Viz, where there is an update and a render function.</li>
-        </ul>
-      </li>
-      <li>Viz* calls specialized drawing functions for each viz type:
-        <ul>
-          <li>GeoMaps draws the voters in tracts and districts.</li>
-          <li>Voronoi1D/2D draws voronoi diagrams.</li>
-          <li>Grid1D/2D draws grids of votes.</li>
-          <li>VoterRender1D/2D has methods to draw the voters outside of any other context.</li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li>VizEntities
-    <ul>
-      <li>Draws handles for voters and candidates.</li>
-      <li>CircleGraphic makes an animated circle.</li>
-      <li>SquareGraphic makes an animated square and shows stats.</li>
-    </ul>
-  </li>
-</ul>
-
-<h2 id="libraries">Libraries</h2>
-
-<ul>
-  <li>Lib
-    <ul>
-      <li>External libraries, copied here using snowpack.</li>
-    </ul>
-  </li>
-</ul>
-
-<h2 id="documentation">Documentation</h2>
-
-<ul>
-  <li>Pages
-    <ul>
-      <li>Documentation for the code, and a few test pages.</li>
-    </ul>
-  </li>
-</ul>
 
       </div>
     </main><footer class="site-footer h-card">

@@ -44,12 +44,16 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/votekit-example/about/">About</a><a class="page-link" href="/votekit-example/votekit/tutorial/architecture.html">Architecture</a><a class="page-link" href="/votekit-example/votekit/tutorial/blog.html">Blog</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_1d.html">1D</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_commands.html">Commands</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_screen.html">Screen</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_sim.html">Sim</a><a class="page-link" href="/votekit-example/devlog/">Development Log</a><a class="page-link" href="/votekit-example/votekit/tutorial/">Pages</a><a class="page-link" href="/votekit-example/votekit/tutorial/issues.html">Issues</a><a class="page-link" href="/votekit-example/votekit/tutorial/program_flow_drag.html">Program Flow Dragging a Voter</a><a class="page-link" href="/votekit-example/votekit/tutorial/program_flow_new.html">Program Flow Adding a New Voter</a><a class="page-link" href="/votekit-example/submodule-instructions/">Submodule Instructions</a></div>
+        <div class="trigger"><a class="page-link" href="/votekit-example/votekit/tutorial/ViewMode.html">ViewMode</a><a class="page-link" href="/votekit-example/about/">About</a><a class="page-link" href="/votekit-example/votekit/tutorial/architecture.html">Architecture</a><a class="page-link" href="/votekit-example/votekit/tutorial/blog.html">Blog</a><a class="page-link" href="/votekit-example/votekit/tutorial/castVotes.html">CastVotes</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_commands.html">CommandsDetailed</a><a class="page-link" href="/votekit-example/votekit/tutorial/commands.html">Commands</a><a class="page-link" href="/votekit-example/devlog/">Development Log</a><a class="page-link" href="/votekit-example/votekit/tutorial/election.html">Election</a><a class="page-link" href="/votekit-example/votekit/tutorial/electionSampler.html">ElectionSampler</a><a class="page-link" href="/votekit-example/votekit/tutorial/entities.html">Entities</a><a class="page-link" href="/votekit-example/votekit/tutorial/folders.html">Folders</a><a class="page-link" href="/votekit-example/votekit/tutorial/">Pages</a><a class="page-link" href="/votekit-example/votekit/tutorial/issues.html">Issues</a><a class="page-link" href="/votekit-example/votekit/tutorial/programFlow.html">ProgramFlow</a><a class="page-link" href="/votekit-example/votekit/tutorial/programFlowDrag.html">Program Flow Dragging a Voter</a><a class="page-link" href="/votekit-example/votekit/tutorial/sandbox.html">Sandbox</a><a class="page-link" href="/votekit-example/votekit/tutorial/screen.html">Screen</a><a class="page-link" href="/votekit-example/votekit/tutorial/sim.html">Sim</a><a class="page-link" href="/votekit-example/votekit/tutorial/simMode.html">SimMode</a><a class="page-link" href="/votekit-example/votekit/tutorial/socialChoice.html">SocialChoice</a><a class="page-link" href="/votekit-example/submodule-instructions/">Submodule Instructions</a><a class="page-link" href="/votekit-example/votekit/tutorial/tooltips.html">Tooltips</a><a class="page-link" href="/votekit-example/votekit/tutorial/view.html">View</a><a class="page-link" href="/votekit-example/votekit/tutorial/viewButtons.html">ViewButtons</a><a class="page-link" href="/votekit-example/votekit/tutorial/viewScreens.html">ViewScreens</a><a class="page-link" href="/votekit-example/votekit/tutorial/viz.html">Viz</a><a class="page-link" href="/votekit-example/votekit/tutorial/vizEntities.html">Viz</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
         <p>Here’s a big list of things I want in the future.</p>
+
+<ul>
+  <li>Parent Page: <a href="index.md">index</a></li>
+</ul>
 
 <h2 id="bugs">Bugs</h2>
 
@@ -74,16 +78,20 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
 
 <h2 id="visuals">Visuals</h2>
 
-<ul>
+<ul class="task-list">
   <li>Animate +1 rising from candidate when they become winner.</li>
-  <li>Budget charts. For MES, show budget being spent in each round. Also, maybe also show comparisons between candidates in each round.</li>
-  <li>We should not be using an object oriented approach like passing VoterViewList and CandidateViewList to a viz function. It’s too confusing and it seems to cross the boundary between simulation model and visualization. We should instead pass data to a viz function.</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Budget charts. For MES, show budget being spent in each round.
+    <ul class="task-list">
+      <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Also, maybe also show comparisons between candidates in each round.</li>
+    </ul>
+  </li>
+  <li class="task-list-item">We should not be using an object oriented approach like passing VoterViewList and CandidateViewList to a viz function. It’s too confusing and it seems to cross the boundary between simulation model and visualization. We should instead pass data to a viz function.</li>
 </ul>
 
 <h2 id="organizing-code">Organizing Code</h2>
 
-<ul>
-  <li>Make test directory outside of src. maybe also put index.html there too, since that is the test I run when developing the code.</li>
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Make test directory outside of src. maybe also put index.html there too, since that is the test I run when developing the code.</li>
 </ul>
 
       </div>

@@ -44,13 +44,69 @@ if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNo
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/votekit-example/about/">About</a><a class="page-link" href="/votekit-example/votekit/tutorial/architecture.html">Architecture</a><a class="page-link" href="/votekit-example/votekit/tutorial/blog.html">Blog</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_1d.html">1D</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_commands.html">Commands</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_screen.html">Screen</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_sim.html">Sim</a><a class="page-link" href="/votekit-example/devlog/">Development Log</a><a class="page-link" href="/votekit-example/votekit/tutorial/">Pages</a><a class="page-link" href="/votekit-example/votekit/tutorial/issues.html">Issues</a><a class="page-link" href="/votekit-example/votekit/tutorial/program_flow_drag.html">Program Flow Dragging a Voter</a><a class="page-link" href="/votekit-example/votekit/tutorial/program_flow_new.html">Program Flow Adding a New Voter</a><a class="page-link" href="/votekit-example/submodule-instructions/">Submodule Instructions</a></div>
+        <div class="trigger"><a class="page-link" href="/votekit-example/votekit/tutorial/ViewMode.html">ViewMode</a><a class="page-link" href="/votekit-example/about/">About</a><a class="page-link" href="/votekit-example/votekit/tutorial/architecture.html">Architecture</a><a class="page-link" href="/votekit-example/votekit/tutorial/blog.html">Blog</a><a class="page-link" href="/votekit-example/votekit/tutorial/castVotes.html">CastVotes</a><a class="page-link" href="/votekit-example/votekit/tutorial/code_commands.html">CommandsDetailed</a><a class="page-link" href="/votekit-example/votekit/tutorial/commands.html">Commands</a><a class="page-link" href="/votekit-example/devlog/">Development Log</a><a class="page-link" href="/votekit-example/votekit/tutorial/election.html">Election</a><a class="page-link" href="/votekit-example/votekit/tutorial/electionSampler.html">ElectionSampler</a><a class="page-link" href="/votekit-example/votekit/tutorial/entities.html">Entities</a><a class="page-link" href="/votekit-example/votekit/tutorial/folders.html">Folders</a><a class="page-link" href="/votekit-example/votekit/tutorial/">Pages</a><a class="page-link" href="/votekit-example/votekit/tutorial/issues.html">Issues</a><a class="page-link" href="/votekit-example/votekit/tutorial/programFlow.html">ProgramFlow</a><a class="page-link" href="/votekit-example/votekit/tutorial/programFlowDrag.html">Program Flow Dragging a Voter</a><a class="page-link" href="/votekit-example/votekit/tutorial/sandbox.html">Sandbox</a><a class="page-link" href="/votekit-example/votekit/tutorial/screen.html">Screen</a><a class="page-link" href="/votekit-example/votekit/tutorial/sim.html">Sim</a><a class="page-link" href="/votekit-example/votekit/tutorial/simMode.html">SimMode</a><a class="page-link" href="/votekit-example/votekit/tutorial/socialChoice.html">SocialChoice</a><a class="page-link" href="/votekit-example/submodule-instructions/">Submodule Instructions</a><a class="page-link" href="/votekit-example/votekit/tutorial/tooltips.html">Tooltips</a><a class="page-link" href="/votekit-example/votekit/tutorial/view.html">View</a><a class="page-link" href="/votekit-example/votekit/tutorial/viewButtons.html">ViewButtons</a><a class="page-link" href="/votekit-example/votekit/tutorial/viewScreens.html">ViewScreens</a><a class="page-link" href="/votekit-example/votekit/tutorial/viz.html">Viz</a><a class="page-link" href="/votekit-example/votekit/tutorial/vizEntities.html">Viz</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
         <p>Here are some pages describing the architecture of Votekit. Also, see <a href="https://github.com/paretoman/votekit">votekit on github</a>.</p>
 
+<ul>
+  <li><a href="architecture.md">Architecture</a>
+    <ul>
+      <li><a href="folders.md">folders</a></li>
+      <li><a href="election.md">Election</a>
+        <ul>
+          <li><a href="castVotes.md">CastVotes</a></li>
+          <li><a href="socialChoice.md">SocialChoice</a></li>
+        </ul>
+      </li>
+      <li><a href="sim.md">Sim</a>
+        <ul>
+          <li><a href="commands.md">Commands</a>
+            <ul>
+              <li><a href="code_commands.md">commands detailed</a> (old)</li>
+            </ul>
+          </li>
+          <li><a href="entities.md">Entities</a></li>
+          <li><a href="simMode.md">SimMode</a>
+            <ul>
+              <li><a href="electionSampler.md">ElectionSampler</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><a href="view.md">View</a>
+        <ul>
+          <li><a href="viewMode.md">viewMode</a></li>
+          <li><a href="viewButtons.md">viewButtons</a></li>
+          <li><a href="viewScreens.md">viewScreens</a>
+            <ul>
+              <li><a href="screen.md">screen</a></li>
+              <li><a href="viz.md">viz</a></li>
+              <li><a href="vizEntities.md">vizEntities</a>
+                <ul>
+                  <li><a href="tooltips.md">tooltips</a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><a href="sandbox.md">sandbox</a></li>
+      <li><a href="programFlow.md">Program flow</a>
+        <ul>
+          <li><a href="programFlow.drawio.svg">programFlow.drawio.svg</a></li>
+          <li><a href="programFlowDrag.md">Dragging</a> (old)</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="issues.md">Issues</a></li>
+  <li><a href="blog.md">Dev Blog</a></li>
+</ul>
+
+<p>Work in progress.</p>
 
       </div>
     </main><footer class="site-footer h-card">

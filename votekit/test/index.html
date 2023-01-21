@@ -2,9 +2,9 @@
 <html lang="en">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="../src/ui/sandbox.css" rel="stylesheet">
-        <link href="../src/menu/button.css" rel="stylesheet">
-        <script type="module" src="../src/ui/addSandboxes.js"></script>
+        <link href="../src/sandbox/sandbox.css" rel="stylesheet">
+        <link href="../src/view/menu/button.css" rel="stylesheet">
+        <script type="module" src="../src/sandbox/addSandboxes.js"></script>
         <style>
             ul li{
                 display: inline;
@@ -14,35 +14,34 @@
     </head>
     <body>
         <ul>
-            <li><a href = 'test.html'>Test Examples</a></li>
-            <li><a href = 'page.html'>Page</a></li>
-            <li><a href = 'ten.html'>Ten</a></li>
+            <li><a href = 'all.html'>Run All Tests</a></li>
+            <li><a href = 'examples.html'>Examples</a></li>
             <li><a href = '../dist/test/'>Dist</a></li>
             <li><a href = '../docs/'>Docs</a></li>
         </ul>
         <div class="sim-sandbox">
             <div class="sim-container">
                 <!-- <div class="sandbox" data-sandboxurl="s/"></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"viz": "sample","electionMethod": "huntingtonHill"}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"geo": true,"electionMethod": "huntingtonHill"}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"mode": "sample","electionMethod": "huntingtonHill"}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"numDistricts": 20,"electionMethod": "huntingtonHill"}'></div> -->
                 <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"dimensions": 1}'></div> -->
                 <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"dimensions": 1,"electionMethod":"score","voters-exists": [1,0],"voters-shape1D-x": [150,250]}'></div> -->
                 <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"dimensions": 1,"electionMethod":"score","voters-shape1D-x": [150,150]}'></div> -->
                 <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"electionMethod": "score"}'></div> -->
                 <!-- <div class="double_sandbox" data-sandboxurl="s/"></div> -->
-                <!-- <div class="double_sandbox" data-sandboxurl="s/" data-config='{"geo": true,"electionMethod": "huntingtonHill"}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"geo": true,"dimensions": 1}'></div> -->
+                <!-- <div class="double_sandbox" data-sandboxurl="s/" data-config='{"numDistricts": 20,"electionMethod": "huntingtonHill"}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"numDistricts": 20,"dimensions": 1}'></div> -->
                 <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"voters-exists": [0,0],"candidates-exists": [0,0,0]}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"viz": "sample","dimensions": 1}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"viz": "sample","dimensions": 1, "geo": true}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"mode": "sample","dimensions": 1}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"mode": "sample","dimensions": 1, "numDistricts": 20}'></div> -->
                 <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"electionMethod": "stv"}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"geo": true,"electionMethod": "olprA"}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"viz": "sample","geo": true,"electionMethod": "olprA"}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"viz": "sample","electionMethod": "olprA"}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"viz": "sample","electionMethod": "allocatedScore"}'></div> -->
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"viz": "sample","electionMethod": "methodOfEqualShares","dimensions": 1}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"numDistricts": 20,"electionMethod": "olprA"}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"mode": "sample","numDistricts": 20,"electionMethod": "olprA"}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"mode": "sample","electionMethod": "olprA"}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"mode": "sample","electionMethod": "allocatedScore"}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"mode": "sample","electionMethod": "methodOfEqualShares","dimensions": 1}'></div> -->
                 <div class="sandbox" data-sandboxurl="s/" data-config='{"electionMethod": "methodOfEqualShares","dimensions": 1}'></div>
-                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"geo": true}'></div> -->
+                <!-- <div class="sandbox" data-sandboxurl="s/" data-config='{"numDistricts": 20}'></div> -->
             </div>
         </div>
     </body>
