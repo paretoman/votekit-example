@@ -1,12 +1,18 @@
+import { socialChoiceMethodMetadata } from '../../election/socialChoiceMethods/socialChoiceMethods.js'
+
 export default function menuElectionOptions(electionOptions, menu) {
+    // a list of social choice methods
+    const socialChoiceMethodList = socialChoiceMethodMetadata.map(
+        ({ shortName, functionName }) => ({ name: shortName, value: functionName }),
+    )
     menu.addMenuItem(
         electionOptions,
         {
             label: 'Election Method:',
-            prop: 'electionMethod',
-            setProp: electionOptions.setElectionMethod,
-            options: electionOptions.electionMethodList,
-            change: ['electionMethod'],
+            prop: 'socialChoiceMethod',
+            setProp: electionOptions.setSocialChoiceMethod,
+            options: socialChoiceMethodList,
+            change: ['socialChoiceMethod'],
         },
     )
 }
