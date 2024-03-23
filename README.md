@@ -1,3 +1,9 @@
+# Deprecated
+
+Go to https://github.com/paretoman/votekit instead. It's a simpler workflow.
+
+Everything below is still here just as a backup.
+
 # See
 
 The site is live and in production mode at http://www.howtofixtheelection.com/votekit-example/
